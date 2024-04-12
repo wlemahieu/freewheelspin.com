@@ -12,8 +12,8 @@ import { twMerge } from "tailwind-merge";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Wheel Spin" },
-    { name: "description", content: "Spin a wheel!" },
+    { title: "Free Wheel Spin" },
+    { name: "description", content: "Spin a wheel with your colleagues!" },
   ];
 };
 
@@ -40,7 +40,18 @@ export default function Index() {
   const [rotation, setRotation] = useState<number>(0);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [isPresenting, setIsPresenting] = useState<boolean>(false);
-  const [slices, setSlices] = useState<Array<Slice>>([]);
+  const [slices, setSlices] = useState<Array<Slice>>([
+    {
+      title: "b",
+      color: "lightblue",
+      ref: createRef<HTMLDivElement>(),
+    },
+    {
+      title: "r",
+      color: "lightgreen",
+      ref: createRef<HTMLDivElement>(),
+    },
+  ]);
   const titleRef = useRef<HTMLInputElement | null>(null);
   const colorRef = useRef<HTMLSelectElement | null>(null);
 
@@ -61,10 +72,10 @@ export default function Index() {
     spinSpeed.current = DEFAULT_SPEED;
     setIsSpinning(false);
     setLocalRotation(0);
+    setIsPresenting(true);
   }, []);
 
   const start = useCallback(() => {
-    setIsPresenting(true);
     if (spinSpeed.current > 0) {
       const speedOffset = DEFAULT_SPEED - spinSpeed.current;
       const expontentialDecay = speedOffset ? speedOffset / 10000 : 0;
@@ -116,7 +127,7 @@ export default function Index() {
       {/*presentation backdrop*/}
       <div
         className={twMerge(
-          "absolute top-0 left-0 h-screen w-full bg-black opacity-30",
+          "absolute top-0 left-0 h-screen w-full bg-black opacity-50",
           isPresenting ? "z-10 block" : "z-0 hidden"
         )}
       />
@@ -143,16 +154,13 @@ export default function Index() {
         </button>
       ) : null}
       {/* content */}
-      <div className="h-full flex flex-col gap-y-5 px-4 py-4 border-blue-100 border-4">
-        {/* navigatino */}
-        <nav className="p-2">
-          <ul className="flex gap-x-2 text-center justify-center text-gray-800">
+      <div className="h-full flex flex-col gap-y-4 overflow-y-scroll overflow-x-hidden">
+        {/* navigation */}
+        <nav className="border-b-[1px] border-gray-200">
+          <ul className="flex gap-x-2 text-center justify-around text-gray-800 py-4">
             <li>
-              <Link
-                to="/"
-                className="border border-gray-400 bg-gray-100 text-gray-500 hover:border-blue-400 hover:bg-blue-100 hover:text-blue-500 text-sm font-bold me-2 px-3 py-1  rounded-tr-sm rounded-bl-sm rounded-br-2xl rounded-tl-2xl duration-300 hover:rounded-2xl"
-              >
-                FreeWheelSpin.com
+              <Link to="/">
+                <span className="font-bold">FreeWheelSpin.com</span>
               </Link>
             </li>
             <li className="bold underline">2D</li>
@@ -160,15 +168,14 @@ export default function Index() {
             <li>Contact</li>
           </ul>
         </nav>
-        <section className="flex flex-col gap-y-10 items-center h-screen">
+        <section className="flex flex-col gap-y-4 items-center h-screen px-4">
           {/* spin button */}
           <button
             disabled={isSpinning}
             type="button"
             onClick={handleSpin}
             className={twMerge(
-              "z-30 border border-gray-400 bg-gray-100 text-gray-500 hover:border-blue-400 hover:bg-blue-100 hover:text-blue-500 text-4xl font-medium me-2 px-3 py-1 pb-2 rounded-2xl",
-              isSpinning ? "z-0" : "z-30"
+              "border border-gray-400 bg-gray-100 text-gray-500 hover:border-blue-400 hover:bg-blue-100 hover:text-blue-500 text-4xl font-medium me-2 px-3 py-1 pb-2 rounded-md w-full disabled:bg-gray-200 disabled:hover:bg-gray-200 disabled:text-gray-400 disabled:hover:border-gray-400"
             )}
           >
             spin
@@ -176,13 +183,26 @@ export default function Index() {
           {/* wheel */}
           <div className="flex justify-center items-center relative pr-12 pl-12">
             <div
-              className="z-20 w-[400px] h-[400px] flex justify-center items-center relative"
+              className="w-[400px] h-[400px] flex justify-center items-center relative"
               style={{
                 animation: "spin 50ms exponential infinite",
                 transform: `rotate(${rotation}deg)`,
               }}
             >
               {slices.map((slice, index) => {
+                if (slices.length === 1) {
+                  return (
+                    <div
+                      key={index}
+                      className="absolute top-0 w-full h-full"
+                      style={{
+                        backgroundColor: slice.color,
+                        borderRadius: "50%",
+                        clipPath: `circle()`,
+                      }}
+                    />
+                  );
+                }
                 const angle = 360 / slices.length;
                 const startAngle = index * angle;
                 const endAngle = (index + 1) * angle;
@@ -213,35 +233,10 @@ export default function Index() {
                 );
               })}
             </div>
-
-            <div
-              className={twMerge(
-                "z-10 absolute right-0 w-16 h-16 bg-gray-200 rounded-full",
-                isPresenting && "opacity-30 bg-gray-300"
-              )}
-            />
-            <svg
-              className={twMerge(
-                "z-30 w-16 h-16 absolute right-0 text-gray-500",
-                isPresenting && "text-gray-600"
-              )}
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 12h14M5 12l4-4m-4 4 4 4"
-              />
-            </svg>
           </div>
         </section>
         {/* add slice form */}
-        <section className="flex justify-center items-center p-4">
+        <section className="flex justify-center items-center p-4 px-4">
           <form className="flex gap-y-4" onSubmit={addSlice}>
             <input
               ref={titleRef}

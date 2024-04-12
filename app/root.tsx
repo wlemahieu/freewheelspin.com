@@ -9,6 +9,11 @@ import {
 import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
+  {
+    rel: "icon",
+    href: "/favicon.gif",
+    type: "image/gif",
+  },
   { rel: "stylesheet", href: stylesheet },
 ];
 
