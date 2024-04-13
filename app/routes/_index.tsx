@@ -1,4 +1,5 @@
 import {
+  FieldMetadata,
   FormProvider,
   getFormProps,
   getInputProps,
@@ -41,23 +42,32 @@ export async function action({ request }: ActionFunctionArgs) {
   return json(submission.reply());
 }
 
+const defaultColors = [
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "purple",
+  "brown",
+  "black",
+  "lightyellow",
+  "lightgreen",
+  "lightblue",
+  "gray",
+  "violet",
+];
+
 export default function Index() {
   const duration = useRef<number>(0);
   const durationInterval = useRef<NodeJS.Timeout | null>(null);
   const spinInterval = useRef<NodeJS.Timeout | null>(null);
   const idleInterval = useRef<NodeJS.Timeout | null>(null);
   const spinSpeed = useRef<number>(DEFAULT_SPEED);
-  const [colors, setColors] = useState([
-    "red",
-    "lightgreen",
-    "lightblue",
-    "orange",
-    "yellow",
-  ]);
   const [localRotation, setLocalRotation] = useState<number>(0);
   const [rotation, setRotation] = useState<number>(0);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
-  const [isPresenting, setIsPresenting] = useState<boolean>(false);
+  const [backdropVisible, setBackdropVisible] = useState<boolean>(false);
   const [pieTextModalVisible, setPieTextModalVisible] = useState(false);
   const isSmall = useMediaQuery({ query: "(max-width: 640px)" });
   const actionData = useActionData<typeof action>();
@@ -70,6 +80,11 @@ export default function Index() {
         schema: PieTextSchema,
       });
       return parsed;
+    },
+    onSubmit(event) {
+      event.preventDefault();
+      // save data to local storage
+      handleClosePieTextModal();
     },
     defaultValue: {
       slices: [
@@ -109,7 +124,7 @@ export default function Index() {
     spinSpeed.current = DEFAULT_SPEED;
     setIsSpinning(false);
     setLocalRotation(0);
-    setIsPresenting(true);
+    setBackdropVisible(true);
   }, []);
 
   const start = useCallback(() => {
@@ -155,7 +170,24 @@ export default function Index() {
   function handleCancelSpin() {
     stop();
     setIsSpinning(false);
-    setIsPresenting(false);
+    setBackdropVisible(false);
+  }
+
+  function handleClosePieTextModal() {
+    setBackdropVisible(false);
+    setPieTextModalVisible(false);
+  }
+
+  function handleOpenPieTextModal() {
+    setBackdropVisible(true);
+    setPieTextModalVisible(true);
+  }
+
+  function handleSelectColor(color: string, colorField: FieldMetadata) {
+    form.update({
+      name: colorField.name,
+      value: color,
+    });
   }
 
   // slowly rotate wheel by default
@@ -170,31 +202,9 @@ export default function Index() {
         <div
           className={twMerge(
             "absolute top-0 left-0 h-screen w-full bg-black opacity-50",
-            isPresenting ? "z-20 block" : "z-0 hidden"
+            backdropVisible ? "z-20 block" : "z-0 hidden"
           )}
         />
-        {/* cancel spin */}
-        {isPresenting ? (
-          <button
-            onClick={handleCancelSpin}
-            className="absolute top-0 right-0 p-2 z-20 "
-          >
-            <svg
-              className="w-16 h-16 text-gray-600 hover:text-blue-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18 17.94 6M18 18 6.06 6"
-              />
-            </svg>
-          </button>
-        ) : null}
         {/* content */}
         <div className="h-full flex flex-col gap-y-4 overflow-y-scroll overflow-x-hidden">
           {/* navigation */}
@@ -221,7 +231,7 @@ export default function Index() {
               type="button"
               onClick={handleSpin}
               className={twMerge(
-                "z-10 border max-w-xl border-green-200 bg-green-100 text-green-500 hover:border-green-400 hover:bg-green-100 hover:text-green-500 text-4xl font-medium me-2 px-3 py-1 pb-2 rounded-full w-full disabled:bg-gray-200 disabled:hover:bg-gray-200 disabled:text-gray-400 disabled:hover:border-gray-400 disabled:border-gray-400"
+                "z-10 border max-w-xl border-blue-200 bg-blue-100 text-blue-500 hover:border-blue-400 hover:bg-blue-100 hover:text-blue-500 text-4xl font-medium me-2 px-3 py-1 pb-2 rounded-full w-full disabled:bg-gray-200 disabled:hover:bg-gray-200 disabled:text-gray-400 disabled:hover:border-gray-400 disabled:border-gray-400"
               )}
             >
               spin
@@ -300,12 +310,11 @@ export default function Index() {
               </div>
             </div>
           </section>
-          {/* add slice form */}
           <section className="flex justify-center items-center px-4">
-            <div className="fixed z-50 w-full h-16 max-w-lg -translate-x-1/2 bg-white border border-gray-200 rounded-full bottom-2 left-1/2 dark:bg-gray-700 dark:border-gray-600">
+            <div className="fixed z-50 w-full h-16 max-w-lg -translate-x-1/2 bg-white border border-gray-200 bottom-0 left-1/2 dark:bg-gray-800 dark:border-gray-600">
               <div className="grid h-full max-w-lg grid-cols-3 mx-auto">
                 <button
-                  data-tooltip-target="tooltip-home"
+                  onClick={handleCancelSpin}
                   type="button"
                   className="inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:bg-gray-50 dark:hover:bg-gray-800 group"
                 >
@@ -321,7 +330,7 @@ export default function Index() {
                   <div className="tooltip-arrow" data-popper-arrow></div>
                 </div>
                 <button
-                  onClick={() => setPieTextModalVisible(true)}
+                  onClick={handleOpenPieTextModal}
                   data-tooltip-target="tooltip-new"
                   type="button"
                   className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
@@ -360,59 +369,80 @@ export default function Index() {
       </main>
       <Modal
         className="opacity-90 overflow-y-hidden"
-        handleCloseModal={() => setPieTextModalVisible(false)}
+        handleCloseModal={handleClosePieTextModal}
         modalVisible={pieTextModalVisible}
-        title="Update pie text"
+        title="Update text"
       >
         <div className="flex flex-col gap-y-2">
           <FormProvider context={form.context}>
             <Form {...getFormProps(form)} method="post">
               <div className="p-4 md:p-5 space-y-4">
-                {slices.map((sliceField, idx) => {
+                {slices.map((sliceField) => {
                   const { text, color } = sliceField.getFieldset();
+                  const selectedColor = color.initialValue;
+                  const filteredColors = defaultColors.reduce(
+                    (newColors, c) => {
+                      if (
+                        selectedColor === c ||
+                        !slices.find((s) => s.initialValue?.color === c)
+                      ) {
+                        return [...newColors, c];
+                      }
+                      return newColors;
+                    },
+                    [] as Array<string>
+                  );
                   return (
                     <div key={text.initialValue} className="flex gap-x-2">
                       <div
                         key={text.initialValue}
-                        className="relative z-0 w-full mb-5 group"
+                        className="relative z-0 w-full group"
                       >
+                        <input {...getInputProps(color, { type: "hidden" })} />
                         <input
                           {...getInputProps(text, { type: "text" })}
-                          className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                          autoComplete="off"
+                          className="block py-2.5 px-0 w-full text-lg text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                         />
                         <label
                           htmlFor="floating_email"
                           className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
                         >
-                          Slice #{idx + 1}
+                          Slice Text
                         </label>
                       </div>
                       <div className="group relative">
                         <button
-                          className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
+                          className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-3 py-1.5 text-center inline-flex items-center"
                           style={{
-                            backgroundColor: color.initialValue,
+                            backgroundColor: selectedColor,
                           }}
                           type="button"
                         >
                           <ChevronDown className="w-6 h-6" />
                         </button>
-                        <div className="z-10 hidden absolute top-0 bg-white rounded-lg shadow w-44 dark:bg-gray-800 group-hover:block">
-                          <span className="text-sm text-white pt-2 mx-4 my-2 font-semibold text-center w-full">
+                        <div className="z-10 hidden absolute top-0 ml-[-231px] w-[280px] bg-white rounded-lg shadow dark:bg-gray-800 group-hover:flex flex-col p-3">
+                          <span className="text-sm text-white font-semibold text-center w-full">
                             Choose a color:
                           </span>
-                          <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                            {colors.map((color) => {
+                          <ul className="py-2 text-sm text-gray-700 dark:text-gray-200 grid grid-flow-row-dense grid-cols-4 w-full">
+                            {filteredColors.map((fc) => {
+                              const selected = fc === selectedColor;
                               return (
                                 <li
-                                  key={color}
-                                  className="border-[3px] mx-2 my-1 border-gray-700 hover:border-blue-700 cursor-pointer"
+                                  key={fc}
+                                  className={twMerge(
+                                    "border-[3px] mx-2 my-1 border-gray-700 hover:border-blue-700 cursor-pointer h-6 flex flex-col items-center",
+                                    selected && "border-[6px] border-green-500"
+                                  )}
                                 >
-                                  <span
-                                    className="block w-full h-8 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                  <button
+                                    className="block hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white h-full w-full"
                                     style={{
-                                      backgroundColor: color,
+                                      backgroundColor: fc,
                                     }}
+                                    onClick={() => handleSelectColor(fc, color)}
+                                    type="button"
                                   />
                                 </li>
                               );
@@ -424,7 +454,7 @@ export default function Index() {
                   );
                 })}
               </div>
-              <div className="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600 justify-end">
+              <div className="flex items-center p-4 md:p-5 rounded-b justify-end">
                 <button
                   type="submit"
                   className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
