@@ -2,6 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import {
   FormEvent,
+  Fragment,
   MutableRefObject,
   createRef,
   useCallback,
@@ -42,13 +43,23 @@ export default function Index() {
   const [isPresenting, setIsPresenting] = useState<boolean>(false);
   const [slices, setSlices] = useState<Array<Slice>>([
     {
-      title: "b",
+      title: "Wes",
       color: "lightblue",
       ref: createRef<HTMLDivElement>(),
     },
     {
-      title: "r",
+      title: "Diego",
       color: "lightgreen",
+      ref: createRef<HTMLDivElement>(),
+    },
+    {
+      title: "Marcus",
+      color: "violet",
+      ref: createRef<HTMLDivElement>(),
+    },
+    {
+      title: "Pedro",
+      color: "red",
       ref: createRef<HTMLDivElement>(),
     },
   ]);
@@ -57,6 +68,7 @@ export default function Index() {
 
   const rotationCount = localRotation / 360;
   const rotations = Math.floor(rotationCount);
+
   console.log("", { rotations });
 
   const stop = useCallback(() => {
@@ -128,14 +140,14 @@ export default function Index() {
       <div
         className={twMerge(
           "absolute top-0 left-0 h-screen w-full bg-black opacity-50",
-          isPresenting ? "z-10 block" : "z-0 hidden"
+          isPresenting ? "z-20 block" : "z-0 hidden"
         )}
       />
       {/* cancel spin */}
       {isPresenting ? (
         <button
           onClick={handleCancelSpin}
-          className="absolute top-0 right-0 p-2 z-10 "
+          className="absolute top-0 right-0 p-2 z-20 "
         >
           <svg
             className="w-16 h-16 text-gray-600 hover:text-blue-500"
@@ -168,14 +180,14 @@ export default function Index() {
             <li>Contact</li>
           </ul>
         </nav>
-        <section className="flex flex-col gap-y-4 items-center h-screen px-4">
+        <section className="flex flex-col gap-y-4 items-center h-screen px-4 overflow-hidden">
           {/* spin button */}
           <button
             disabled={isSpinning}
             type="button"
             onClick={handleSpin}
             className={twMerge(
-              "border border-gray-400 bg-gray-100 text-gray-500 hover:border-blue-400 hover:bg-blue-100 hover:text-blue-500 text-4xl font-medium me-2 px-3 py-1 pb-2 rounded-md w-full disabled:bg-gray-200 disabled:hover:bg-gray-200 disabled:text-gray-400 disabled:hover:border-gray-400"
+              "z-10 border border-gray-400 bg-gray-100 text-gray-500 hover:border-blue-400 hover:bg-blue-100 hover:text-blue-500 text-4xl font-medium me-2 px-3 py-1 pb-2 rounded-md w-full disabled:bg-gray-200 disabled:hover:bg-gray-200 disabled:text-gray-400 disabled:hover:border-gray-400"
             )}
           >
             spin
@@ -183,7 +195,7 @@ export default function Index() {
           {/* wheel */}
           <div className="flex justify-center items-center relative pr-12 pl-12">
             <div
-              className="w-[400px] h-[400px] flex justify-center items-center relative"
+              className="w-[500px] h-[500px] flex justify-center items-center relative"
               style={{
                 animation: "spin 50ms exponential infinite",
                 transform: `rotate(${rotation}deg)`,
@@ -206,12 +218,16 @@ export default function Index() {
                 const angle = 360 / slices.length;
                 const startAngle = index * angle;
                 const endAngle = (index + 1) * angle;
-
                 // Convert angles to radians
                 const startAngleRad = (startAngle * Math.PI) / 180;
                 const endAngleRad = (endAngle * Math.PI) / 180;
-
-                const w = 200;
+                console.log("", {
+                  startAngle,
+                  startAngleRad,
+                  endAngle,
+                  endAngleRad,
+                });
+                const w = 250;
                 // Calculate coordinates for the points of the slice
                 const x1 = Math.cos(startAngleRad) * w + w;
                 const y1 = Math.sin(startAngleRad) * w + w;
@@ -220,16 +236,41 @@ export default function Index() {
 
                 // Calculate the large-arc-flag for the arc command
                 const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+                const titleAngle = startAngle + angle / 2; // Calculate the angle for the title
+
+                // Convert title angle to radians
+                const titleAngleRad = (titleAngle * Math.PI) / 180;
+
+                // Calculate the coordinates for positioning the title
+                const titleX = Math.cos(titleAngleRad) * (w / 2) + w; // Adjust radius as needed
+                const titleY = Math.sin(titleAngleRad) * (w / 2) + w; // Adjust radius as needed
+
+                // Calculate the font size based on the length of the title
+                const fontSize = slice.title
+                  ? Math.max(14, 54 - slice.title.length)
+                  : 10; // Adjust the minimum and maximum font sizes as needed
 
                 return (
-                  <div
-                    key={index}
-                    className="absolute top-0 left-0 w-full h-full"
-                    style={{
-                      backgroundColor: slice.color,
-                      clipPath: `path('M ${w} ${w} L ${w} ${w} L ${x1} ${y1} A ${w} ${w} 0 ${largeArcFlag} 1 ${x2} ${y2} Z')`,
-                    }}
-                  />
+                  <Fragment key={index}>
+                    <div
+                      className="absolute top-0 left-0 w-full h-full flex justify-center text-center align-middle items-center"
+                      style={{
+                        backgroundColor: slice.color,
+                        clipPath: `path('M ${w} ${w} L ${w} ${w} L ${x1} ${y1} A ${w} ${w} 0 ${largeArcFlag} 1 ${x2} ${y2} Z')`,
+                      }}
+                    />
+                    <div
+                      className="z-10 absolute"
+                      style={{
+                        left: `${titleX}px`,
+                        top: `${titleY}px`,
+                        transform: `translate(-50%, -50%) rotate(${titleAngle}deg)`, // Center the title
+                        fontSize: `${fontSize}px`, // Set the font size dynamically
+                      }}
+                    >
+                      {slice.title}
+                    </div>
+                  </Fragment>
                 );
               })}
             </div>
