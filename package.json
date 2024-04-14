@@ -25,7 +25,8 @@
     "react-responsive": "^10.0.0",
     "tailwind-merge": "^2.2.2",
     "three": "^0.163.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.8.1",
