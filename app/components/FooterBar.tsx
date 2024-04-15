@@ -7,14 +7,14 @@ export function FooterBar() {
   const { handleOpenPieTextModal } = usePieStore<PieStore>((state) => state);
 
   return (
-    <div className="fixed w-full h-16 bg-white border border-gray-200 bottom-0 dark:bg-gray-100 dark:border-gray-200">
+    <footer className="z-10 w-full h-12 bottom-0 bg-white border border-gray-200 dark:bg-gray-100 dark:border-gray-200">
       <div className="grid h-full max-w-lg grid-cols-3 mx-auto">
         <button
           onClick={handleOpenPieTextModal}
           type="button"
           className="inline-flex flex-col items-center justify-center px-5 text-blue-300 hover:text-blue-500 group"
         >
-          <List className="w-12 h-12" />
+          <List className="w-10 h-10" />
           <span className="sr-only">Pie text</span>
         </button>
         <div
@@ -27,7 +27,7 @@ export function FooterBar() {
           type="button"
           className="inline-flex flex-col items-center justify-center px-5 text-blue-300 hover:text-blue-500 group"
         >
-          <AdjustmentsHorizontal className="w-10 h-10" />
+          <AdjustmentsHorizontal className="w-8 h-8" />
           <span className="sr-only">Settings</span>
         </button>
         <div
@@ -43,7 +43,7 @@ export function FooterBar() {
           rel="noreferrer"
         >
           <svg
-            className="w-9 h-9"
+            className="w-7 h-7"
             xmlns="http://www.w3.org/2000/svg"
             width="64"
             viewBox="0 0 73.323 64"
@@ -78,6 +78,6 @@ export function FooterBar() {
           Settings
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

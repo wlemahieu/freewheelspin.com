@@ -1,9 +1,27 @@
 import { create } from "zustand";
 
 export const DEFAULT_SPEED = 300;
-export const ROTATION_INTERVAL_MS = 1;
+export const ROTATION_INTERVAL_MS = 10;
 export const DECAY_RATE = 0.9991;
-export const IDLE_SPEED = 0.05;
+export const IDLE_SPEED = 0.25;
+export const DEFAULT_OPTIONS = [
+  {
+    text: "Wes",
+    color: "lightblue",
+  },
+  {
+    text: "Diego",
+    color: "lightgreen",
+  },
+  {
+    text: "Marcus",
+    color: "orange",
+  },
+  {
+    text: "Pedro",
+    color: "red",
+  },
+];
 
 export type PieStore = {
   backdropVisible: boolean;
@@ -119,6 +137,12 @@ export const usePieStore = create<PieStore>((set) => ({
     set((state) => {
       if (state.idleInterval) {
         clearInterval(state.idleInterval);
+      }
+      if (state.durationInterval) {
+        clearInterval(state.durationInterval);
+      }
+      if (state.spinInterval) {
+        clearInterval(state.spinInterval);
       }
       return {
         idleInterval: null,

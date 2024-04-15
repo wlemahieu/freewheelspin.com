@@ -1,7 +1,8 @@
+import { Pause } from "flowbite-react-icons/solid";
 import { twMerge } from "tailwind-merge";
 import { usePieStore } from "~/usePieStore";
 
-export function SpinButton() {
+export function PauseButton() {
   const { isSpinning, pieTextModalVisible, startWheel, stopWheel } =
     usePieStore();
 
@@ -12,9 +13,10 @@ export function SpinButton() {
     return startWheel();
   }
 
+  if (!isSpinning) return null;
+
   return (
     <button
-      disabled={isSpinning}
       type="button"
       onClick={handleClick}
       className={twMerge(
@@ -25,7 +27,7 @@ export function SpinButton() {
           : "bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-500 shadow-blue-500/50 dark:shadow-blue-800/80"
       )}
     >
-      Spin
+      <Pause className="w-5 h-5" />
     </button>
   );
 }
