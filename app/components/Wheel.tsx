@@ -1,23 +1,25 @@
-import { Fragment, useEffect } from "react";
+import { ArrowLeft } from "flowbite-react-icons/outline";
+import { Fragment, useEffect, useRef } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useWheelSize } from "~/hooks/useWheelSize";
-import { DEFAULT_OPTIONS, PieStore, usePieStore } from "~/usePieStore";
+import { DEFAULT_OPTIONS, PieStore, usePieStore } from "~/store/usePieStore";
+
+const slices = DEFAULT_OPTIONS.reverse();
 
 export default function Wheel() {
   const {
     isSpinning,
-    localRotation,
     rotation,
     rotateIdle,
     showBackdrop,
     spinSpeed,
     startWheel,
     stopWheel,
+    winner,
+    setWinner,
   } = usePieStore<PieStore>((state) => state);
   const isSmall = useMediaQuery({ query: "(max-width: 510px)" });
-  const slices = DEFAULT_OPTIONS;
-  const rotationCount = localRotation / 360;
-  const rotations = Math.floor(rotationCount);
+  const arrowRef = useRef<SVGSVGElement | null>(null);
   const wheelSize = useWheelSize();
   const navbarHeight = 40;
   const footerHeight = 64;
@@ -28,6 +30,12 @@ export default function Wheel() {
     footerHeight -
     navbarHeight -
     wheelPadding * 2;
+  const angle = 360 / slices.length;
+  const adj = 360 - rotation;
+  const sliceAngleRanges = slices.map((slice, idx) => ({
+    ...slice,
+    degrees: [idx * angle, (idx + 1) * angle],
+  }));
 
   function handleClick() {
     if (isSpinning) {
@@ -35,17 +43,6 @@ export default function Wheel() {
     }
     return startWheel();
   }
-
-  useEffect(() => {
-    rotateIdle();
-  }, [rotateIdle]);
-
-  useEffect(() => {
-    if (spinSpeed <= 0) {
-      stopWheel();
-      showBackdrop();
-    }
-  }, [showBackdrop, spinSpeed, stopWheel]);
 
   function getTextSize(textLength: number): number {
     const maxSize = 850;
@@ -81,6 +78,27 @@ export default function Wheel() {
     return fontSize;
   }
 
+  useEffect(() => {
+    rotateIdle();
+  }, [rotateIdle]);
+
+  useEffect(() => {
+    if (spinSpeed <= 0) {
+      stopWheel();
+      showBackdrop();
+    }
+  }, [showBackdrop, spinSpeed, stopWheel]);
+
+  useEffect(() => {
+    if (!winner && typeof isSpinning === "boolean" && !isSpinning) {
+      setWinner(
+        sliceAngleRanges.find((slice) => {
+          return adj >= slice.degrees[0] && adj <= slice.degrees[1];
+        })
+      );
+    }
+  }, [adj, isSpinning, rotation, setWinner, sliceAngleRanges, winner]);
+
   // wheel should use local storage OR default values.
   if (size < 150) {
     return <div>Please increase your screen size.</div>;
@@ -88,6 +106,11 @@ export default function Wheel() {
 
   return (
     <div className="relative">
+      {winner ? (
+        <div className="absolute top-0 left-1/2 z-20 text-lg text-white bg-black p-3 rounded-lg">
+          {winner?.text}
+        </div>
+      ) : null}
       <button
         className="absolute top-0 w-full h-full z-50"
         style={{
@@ -95,6 +118,11 @@ export default function Wheel() {
           clipPath: `circle()`,
         }}
         onClick={handleClick}
+      />
+      <ArrowLeft
+        ref={arrowRef}
+        className="z-20 w-20 h-20 font-thin text-black absolute right-0 top-1/2"
+        style={{ transform: "translateX(80%) translateY(-50%)" }}
       />
       <div
         className="flex justify-center items-center relative"
@@ -105,7 +133,7 @@ export default function Wheel() {
           height: `${size}px`,
         }}
       >
-        {slices.map((slice, index) => {
+        {sliceAngleRanges.map((slice, index) => {
           if (slices.length === 1) {
             return (
               <Fragment key={index}>
@@ -172,7 +200,7 @@ export default function Wheel() {
                   fontSize: `${getTextSize(slice.text.length)}px`,
                 }}
               >
-                {slice.text}
+                <span>{slice.text}</span>
               </div>
             </Fragment>
           );

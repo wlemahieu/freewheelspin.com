@@ -23,6 +23,8 @@ export const DEFAULT_OPTIONS = [
   },
 ];
 
+type Slice = { text: string; color: string; degrees: number[] };
+
 export type PieStore = {
   backdropVisible: boolean;
   duration: number;
@@ -34,16 +36,13 @@ export type PieStore = {
   idleInterval: NodeJS.Timeout | null;
   incrementDuration: () => void;
   isSpinning: boolean | undefined;
-  localRotation: number;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
   resetDuration: () => void;
-  resetLocalRotation: () => void;
   rotateIdle: () => void;
   rotation: number;
   setBackdropVisible: (visible: boolean) => void;
   setIsSpinning: (spinning: boolean) => void;
-  setLocalRotation: (spinSpeed: number) => void;
   setPieTextModalVisible: (visible: boolean) => void;
   setRotation: (spinSpeed: number) => void;
   setSpinSpeed: (spinSpeed: number) => void;
@@ -52,6 +51,8 @@ export type PieStore = {
   spinInterval: NodeJS.Timeout | null;
   startWheel: () => void;
   stopWheel: () => void;
+  winner: Slice | undefined;
+  setWinner: (winner: Slice | undefined) => void;
 };
 
 export const usePieStore = create<PieStore>((set) => ({
@@ -74,7 +75,6 @@ export const usePieStore = create<PieStore>((set) => ({
     return set((state) => ({ duration: state.duration + 1 }));
   },
   isSpinning: undefined,
-  localRotation: 0,
   pieTextModalVisible: false,
   propagateWheel: () => {
     set((state) => {
@@ -91,9 +91,7 @@ export const usePieStore = create<PieStore>((set) => ({
         }
         return {
           idleInterval: null,
-          localRotation:
-            state.localRotation === 359 ? 0 : state.localRotation + spinSpeed,
-          rotation: state.rotation === 359 ? 0 : state.rotation + spinSpeed,
+          rotation: state.rotation >= 359 ? 0 : state.rotation + spinSpeed,
           spinSpeed,
         };
       }
@@ -101,13 +99,11 @@ export const usePieStore = create<PieStore>((set) => ({
     });
   },
   resetDuration: () => set({ duration: 0 }),
-  resetLocalRotation: () => set({ localRotation: 0 }),
   rotateIdle: () => {
     set((state) => {
       if (!state.idleInterval) {
         return {
           idleInterval: setInterval(() => {
-            state.setLocalRotation(IDLE_SPEED);
             return state.setRotation(IDLE_SPEED);
           }, ROTATION_INTERVAL_MS),
         };
@@ -118,12 +114,6 @@ export const usePieStore = create<PieStore>((set) => ({
   rotation: 0,
   setBackdropVisible: (visible) => set({ backdropVisible: visible }),
   setIsSpinning: (spinning) => set({ isSpinning: spinning }),
-  setLocalRotation: (spinSpeed) => {
-    set((state) => ({
-      localRotation:
-        state.localRotation === 359 ? 0 : state.localRotation + spinSpeed,
-    }));
-  },
   setPieTextModalVisible: (visible) => set({ pieTextModalVisible: visible }),
   setRotation: (spinSpeed) =>
     set((state) => ({
@@ -155,6 +145,7 @@ export const usePieStore = create<PieStore>((set) => ({
               state.propagateWheel();
             }, ROTATION_INTERVAL_MS)
           : state.spinInterval,
+        winner: undefined,
       };
     });
   },
@@ -174,10 +165,11 @@ export const usePieStore = create<PieStore>((set) => ({
         durationInterval: null,
         isSpinning: false,
         idleInterval: null,
-        localRotation: 0,
         spinInterval: null,
         spinSpeed: DEFAULT_SPEED,
       };
     });
   },
+  winner: undefined,
+  setWinner: (winner: Slice | undefined) => set({ winner }),
 }));

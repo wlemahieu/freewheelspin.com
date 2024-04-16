@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { List } from "flowbite-react-icons/outline";
 import { AdjustmentsHorizontal } from "flowbite-react-icons/solid";
-import { PieStore, usePieStore } from "~/usePieStore";
+import { PieStore, usePieStore } from "~/store/usePieStore";
 
 export function FooterBar() {
   const { handleOpenPieTextModal } = usePieStore<PieStore>((state) => state);

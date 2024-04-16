@@ -9,11 +9,10 @@ import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { Form, useActionData } from "@remix-run/react";
 import { ChevronDown, Close } from "flowbite-react-icons/outline";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
 import { Modal } from "~/components/Modal";
 import { action } from "~/routes/_index";
 import { PieTextSchema } from "~/schemas/pie-text";
-import { DEFAULT_OPTIONS, PieStore, usePieStore } from "~/usePieStore";
+import { DEFAULT_OPTIONS, PieStore, usePieStore } from "~/store/usePieStore";
 
 const defaultColors = [
   "red",
@@ -54,7 +53,6 @@ export function UpdateTextModal() {
         slices,
       });
 
-      console.log({ test, slices });
       /*
       for (const key of formData.keys()) {
         console.log("", { key });

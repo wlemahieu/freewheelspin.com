@@ -1,6 +1,6 @@
 import { Pause } from "flowbite-react-icons/solid";
 import { twMerge } from "tailwind-merge";
-import { usePieStore } from "~/usePieStore";
+import { usePieStore } from "~/store/usePieStore";
 
 export function PauseButton() {
   const { isSpinning, pieTextModalVisible, startWheel, stopWheel } =
