@@ -21,9 +21,17 @@ export const DEFAULT_OPTIONS = [
     text: "Pedro",
     color: "red",
   },
+  {
+    text: "Edgar",
+    color: "green",
+  },
+  {
+    text: "Karl",
+    color: "blue",
+  },
 ];
 
-type Slice = { text: string; color: string; degrees: number[] };
+export type Slice = { text: string; color: string; degrees: number[] };
 
 export type PieStore = {
   backdropVisible: boolean;
@@ -85,7 +93,8 @@ export const usePieStore = create<PieStore>((set) => ({
         // 300 default speed equates to a 0-0.03 expontentialDecay
         // create a random number to randomize the spin a bit
         const spinSpeed =
-          Math.pow(state.spinSpeed, DECAY_RATE) - expontentialDecay;
+          Math.pow(state.spinSpeed, DECAY_RATE) -
+          expontentialDecay * Math.random();
         if (state.idleInterval) {
           clearInterval(state.idleInterval);
         }

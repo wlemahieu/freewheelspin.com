@@ -1,10 +1,12 @@
 import { ArrowLeft } from "flowbite-react-icons/outline";
 import { Fragment, useEffect, useRef } from "react";
-import { useMediaQuery } from "react-responsive";
 import { useWheelSize } from "~/hooks/useWheelSize";
-import { DEFAULT_OPTIONS, PieStore, usePieStore } from "~/store/usePieStore";
-
-const slices = DEFAULT_OPTIONS.reverse();
+import {
+  DEFAULT_OPTIONS,
+  PieStore,
+  Slice,
+  usePieStore,
+} from "~/store/usePieStore";
 
 export default function Wheel() {
   const {
@@ -18,13 +20,15 @@ export default function Wheel() {
     winner,
     setWinner,
   } = usePieStore<PieStore>((state) => state);
-  const isSmall = useMediaQuery({ query: "(max-width: 510px)" });
+  const pageRef = useRef(null);
   const arrowRef = useRef<SVGSVGElement | null>(null);
   const wheelSize = useWheelSize();
   const navbarHeight = 40;
   const footerHeight = 64;
   const wheelPadding = 4;
   // Calculate the size of the div based on the smaller dimension f
+  const slices = getSlices();
+
   const size =
     Math.min(wheelSize.width, wheelSize.height) -
     footerHeight -
@@ -78,6 +82,16 @@ export default function Wheel() {
     return fontSize;
   }
 
+  function getSlices() {
+    if (pageRef.current) {
+      const storedSlices = localStorage.getItem("slices");
+      if (storedSlices) {
+        return JSON.parse(storedSlices) as Array<Slice>;
+      }
+    }
+    return DEFAULT_OPTIONS.reverse();
+  }
+
   useEffect(() => {
     rotateIdle();
   }, [rotateIdle]);
@@ -99,13 +113,14 @@ export default function Wheel() {
     }
   }, [adj, isSpinning, rotation, setWinner, sliceAngleRanges, winner]);
 
+  useEffect(() => {});
   // wheel should use local storage OR default values.
   if (size < 150) {
     return <div>Please increase your screen size.</div>;
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={pageRef}>
       {winner ? (
         <div className="absolute top-0 left-1/2 z-20 text-lg text-white bg-black p-3 rounded-lg">
           {winner?.text}
