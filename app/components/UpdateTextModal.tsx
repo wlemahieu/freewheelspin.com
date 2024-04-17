@@ -12,7 +12,7 @@ import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { Modal } from "~/components/Modal";
 import { action } from "~/routes/_index";
-import { PieTextSchema } from "~/schemas/pie-text";
+import { PieTextSchema } from "~/schemas/schemas";
 import {
   DEFAULT_OPTIONS,
   PieStore,

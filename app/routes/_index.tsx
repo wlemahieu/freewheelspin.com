@@ -6,7 +6,8 @@ import { FooterBar } from "~/components/FooterBar";
 import { Navbar } from "~/components/Navbar";
 import { UpdateTextModal } from "~/components/UpdateTextModal";
 import Wheel from "~/components/Wheel";
-import { PieTextSchema } from "~/schemas/pie-text";
+import { WheelOptionsModal } from "~/components/WheelOptionsModal";
+import { PieTextSchema } from "~/schemas/schemas";
 
 export const meta: MetaFunction = () => {
   return [
@@ -35,6 +36,7 @@ export default function Index() {
         <FooterBar />
       </main>
       <UpdateTextModal />
+      <WheelOptionsModal />
     </>
   );
 }

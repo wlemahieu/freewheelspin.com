@@ -8,3 +8,7 @@ export const PieTextSchema = z.object({
     })
   ),
 });
+
+export const OptionsSchema = z.object({
+  winnersRemoved: z.boolean(),
+});

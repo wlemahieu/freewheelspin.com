@@ -4,7 +4,8 @@ import { AdjustmentsHorizontal } from "flowbite-react-icons/solid";
 import { PieStore, usePieStore } from "~/store/usePieStore";
 
 export function FooterBar() {
-  const { handleOpenPieTextModal } = usePieStore<PieStore>((state) => state);
+  const { handleOpenPieTextModal, handleOpenOptionsModal } =
+    usePieStore<PieStore>((state) => state);
 
   return (
     <footer className="z-10 w-full h-12 bottom-0 bg-white border border-gray-200 dark:bg-gray-100 dark:border-gray-200">
@@ -24,6 +25,7 @@ export function FooterBar() {
           Pie text
         </div>
         <button
+          onClick={handleOpenOptionsModal}
           type="button"
           className="inline-flex flex-col items-center justify-center px-5 text-blue-300 hover:text-blue-500 group"
         >

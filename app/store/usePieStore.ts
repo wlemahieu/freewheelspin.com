@@ -1,8 +1,10 @@
 import { create } from "zustand";
 
-export const DEFAULT_SPEED = 300;
+//export const DEFAULT_SPEED = 200;
+//export const DECAY_RATE = 0.9991;
+export const DEFAULT_SPEED = 200;
+export const DECAY_RATE = 0.99954;
 export const ROTATION_INTERVAL_MS = 10;
-export const DECAY_RATE = 0.9991;
 export const IDLE_SPEED = 0.25;
 export const DEFAULT_OPTIONS = [
   {
@@ -38,12 +40,15 @@ export type PieStore = {
   duration: number;
   durationInterval: NodeJS.Timeout | null;
   handleCancelSpin: () => void;
+  handleOpenOptionsModal: () => void;
+  handleCloseOptionsModal: () => void;
   handleOpenPieTextModal: () => void;
   handleClosePieTextModal: () => void;
   hideBackdrop: () => void;
   idleInterval: NodeJS.Timeout | null;
   incrementDuration: () => void;
   isSpinning: boolean | undefined;
+  optionsModalVisible: boolean;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
   resetDuration: () => void;
@@ -51,7 +56,6 @@ export type PieStore = {
   rotation: number;
   setBackdropVisible: (visible: boolean) => void;
   setIsSpinning: (spinning: boolean) => void;
-  setPieTextModalVisible: (visible: boolean) => void;
   setRotation: (spinSpeed: number) => void;
   setSpinSpeed: (spinSpeed: number) => void;
   showBackdrop: () => void;
@@ -76,13 +80,19 @@ export const usePieStore = create<PieStore>((set) => ({
   handleClosePieTextModal: () => {
     set({ backdropVisible: false, pieTextModalVisible: false });
   },
+  handleOpenOptionsModal: () => {
+    set({ backdropVisible: true, optionsModalVisible: true });
+  },
+  handleCloseOptionsModal: () => {
+    set({ backdropVisible: false, optionsModalVisible: false });
+  },
   hideBackdrop: () => set({ backdropVisible: false }),
-
   idleInterval: null,
   incrementDuration: () => {
     return set((state) => ({ duration: state.duration + 1 }));
   },
   isSpinning: undefined,
+  optionsModalVisible: false,
   pieTextModalVisible: false,
   propagateWheel: () => {
     set((state) => {
@@ -94,18 +104,10 @@ export const usePieStore = create<PieStore>((set) => ({
         // create a random number to randomize the spin a bit
         const spinSpeed =
           Math.pow(state.spinSpeed, DECAY_RATE) -
-          expontentialDecay * Math.random();
+          expontentialDecay * (Math.random() * 3);
         if (state.idleInterval) {
           clearInterval(state.idleInterval);
         }
-        /*
-        console.log({
-          speedOffset,
-          expontentialDecay,
-          spinSpeed,
-          newRotation:
-            state.rotation >= 359 ? spinSpeed : state.rotation + spinSpeed,
-        });*/
         return {
           idleInterval: null,
           rotation:
@@ -134,7 +136,6 @@ export const usePieStore = create<PieStore>((set) => ({
   rotation: 0,
   setBackdropVisible: (visible) => set({ backdropVisible: visible }),
   setIsSpinning: (spinning) => set({ isSpinning: spinning }),
-  setPieTextModalVisible: (visible) => set({ pieTextModalVisible: visible }),
   setRotation: (spinSpeed) =>
     set((state) => {
       return {
