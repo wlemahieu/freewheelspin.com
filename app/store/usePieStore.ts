@@ -1,9 +1,7 @@
 import { create } from "zustand";
 
-//export const DEFAULT_SPEED = 200;
-//export const DECAY_RATE = 0.9991;
-export const DEFAULT_SPEED = 200;
-export const DECAY_RATE = 0.99954;
+export const DEFAULT_SPEED = 100;
+export const DECAY_RATE = 0.9995;
 export const ROTATION_INTERVAL_MS = 10;
 export const IDLE_SPEED = 0.25;
 export const DEFAULT_OPTIONS = [
@@ -33,9 +31,10 @@ export const DEFAULT_OPTIONS = [
   },
 ];
 
-export type Slice = { text: string; color: string; degrees: number[] };
+export type Slice = { text: string; color: string; degrees?: number[] };
 
 export type PieStore = {
+  audio: HTMLAudioElement | null;
   backdropVisible: boolean;
   duration: number;
   durationInterval: NodeJS.Timeout | null;
@@ -54,6 +53,7 @@ export type PieStore = {
   resetDuration: () => void;
   rotateIdle: () => void;
   rotation: number;
+  setAudio: (audio: HTMLAudioElement) => void;
   setBackdropVisible: (visible: boolean) => void;
   setIsSpinning: (spinning: boolean) => void;
   setRotation: (spinSpeed: number) => void;
@@ -68,6 +68,7 @@ export type PieStore = {
 };
 
 export const usePieStore = create<PieStore>((set) => ({
+  audio: null,
   backdropVisible: false,
   duration: 0,
   durationInterval: null,
@@ -104,7 +105,7 @@ export const usePieStore = create<PieStore>((set) => ({
         // create a random number to randomize the spin a bit
         const spinSpeed =
           Math.pow(state.spinSpeed, DECAY_RATE) -
-          expontentialDecay * (Math.random() * 3);
+          expontentialDecay; /** (Math.random() * 3)*/
         if (state.idleInterval) {
           clearInterval(state.idleInterval);
         }
@@ -134,6 +135,7 @@ export const usePieStore = create<PieStore>((set) => ({
     });
   },
   rotation: 0,
+  setAudio: (audio) => set({ audio }),
   setBackdropVisible: (visible) => set({ backdropVisible: visible }),
   setIsSpinning: (spinning) => set({ isSpinning: spinning }),
   setRotation: (spinSpeed) =>
@@ -151,6 +153,15 @@ export const usePieStore = create<PieStore>((set) => ({
   spinSpeed: DEFAULT_SPEED,
   startWheel: () => {
     set((state) => {
+      if (state.audio) {
+        state.audio.pause();
+      }
+      const audioElement = new Audio("/spin.m4a");
+      audioElement.currentTime = 0.75;
+      audioElement.volume = 0.25;
+      audioElement.playbackRate = 0.8;
+      audioElement?.play();
+
       if (state.idleInterval) {
         clearInterval(state.idleInterval);
       }
@@ -161,6 +172,7 @@ export const usePieStore = create<PieStore>((set) => ({
         clearInterval(state.spinInterval);
       }
       return {
+        audio: audioElement,
         idleInterval: null,
         isSpinning: true,
         durationInterval: !state.durationInterval
@@ -177,6 +189,9 @@ export const usePieStore = create<PieStore>((set) => ({
   },
   stopWheel: () => {
     set((state) => {
+      if (state.audio) {
+        state.audio.pause();
+      }
       if (state.durationInterval) {
         clearInterval(state.durationInterval);
       }
@@ -187,6 +202,7 @@ export const usePieStore = create<PieStore>((set) => ({
         clearInterval(state.idleInterval);
       }
       return {
+        audio: null,
         duration: 0,
         durationInterval: null,
         isSpinning: false,

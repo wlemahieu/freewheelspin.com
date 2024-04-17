@@ -23,14 +23,13 @@ export default function Wheel() {
     setWinner,
   } = usePieStore<PieStore>((state) => state);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [slices, setSlices] = useState<Array<Slice>>([]);
   const pageRef = useRef(null);
   const arrowRef = useRef<SVGSVGElement | null>(null);
   const wheelSize = useWheelSize();
   const navbarHeight = 40;
   const footerHeight = 64;
   const wheelPadding = 4;
-  // Calculate the size of the div based on the smaller dimension f
-  const slices = getSlices();
 
   const size =
     Math.min(wheelSize.width, wheelSize.height) -
@@ -49,14 +48,7 @@ export default function Wheel() {
     if (isSpinning) {
       return stopWheel();
     }
-    if (audio) {
-      audio.pause();
-    }
-    const audioElement = new Audio("/spin.m4a");
-    audioElement.currentTime = 0.75;
-    audioElement.volume = 0.25;
-    audioElement?.play();
-    setAudio(audioElement);
+
     return startWheel();
   }
 
@@ -105,6 +97,10 @@ export default function Wheel() {
   }
 
   useEffect(() => {
+    setSlices(getSlices());
+  }, []);
+
+  useEffect(() => {
     rotateIdle();
   }, [rotateIdle]);
 
@@ -128,6 +124,19 @@ export default function Wheel() {
       audioElement?.play();
       setAudio(audioElement);
       setWinner(findWinner);
+      const options = localStorage.getItem("options");
+      if (options) {
+        const { winnersRemoved } = JSON.parse(options);
+        if (winnersRemoved) {
+          setSlices((prevSlices) =>
+            prevSlices.filter((slice) => slice.text !== findWinner?.text)
+          );
+        }
+      } else {
+        setSlices((prevSlices) =>
+          prevSlices.filter((slice) => slice.text !== findWinner?.text)
+        );
+      }
     }
   }, [adj, audio, isSpinning, rotation, setWinner, sliceAngleRanges, winner]);
 
@@ -140,8 +149,14 @@ export default function Wheel() {
     <>
       <div className="relative" ref={pageRef}>
         {winner ? (
-          <div className="absolute top-0 left-1/2 z-20 text-lg text-white bg-black p-3 rounded-lg">
-            {winner?.text}
+          <div
+            className="absolute top-1/2 left-1/2 z-20 w-full"
+            style={{ transform: "translateX(-50%) translateY(-50%)" }}
+          >
+            <div className="flex text-3xl text-white text-center items-center justify-center opacity-90 w-auto h-30 px-8 py-4 bg-gray-800 rounded-lg">
+              <span className="font-bold">{winner?.text}</span>
+              <span className="shrink-0">{` - You won!`}</span>
+            </div>
           </div>
         ) : null}
         <button

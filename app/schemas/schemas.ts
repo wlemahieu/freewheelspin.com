@@ -10,5 +10,8 @@ export const PieTextSchema = z.object({
 });
 
 export const OptionsSchema = z.object({
-  winnersRemoved: z.boolean(),
+  winnersRemoved: z
+    .boolean()
+    .optional()
+    .transform((arg) => Boolean(arg)),
 });

@@ -1,11 +1,21 @@
 import { Link } from "@remix-run/react";
 import { List } from "flowbite-react-icons/outline";
 import { AdjustmentsHorizontal } from "flowbite-react-icons/solid";
+import { useState } from "react";
 import { PieStore, usePieStore } from "~/store/usePieStore";
 
 export function FooterBar() {
   const { handleOpenPieTextModal, handleOpenOptionsModal } =
     usePieStore<PieStore>((state) => state);
+  const [stopColor, setStopColor] = useState("#93C5FD");
+
+  function handleMouseEnterTrello() {
+    setStopColor("#3B82F6");
+  }
+
+  function handleMouseLeaveTrello() {
+    setStopColor("#93C5FD");
+  }
 
   return (
     <footer className="z-10 w-full h-12 bottom-0 bg-white border border-gray-200 dark:bg-gray-100 dark:border-gray-200">
@@ -50,6 +60,8 @@ export function FooterBar() {
             width="64"
             viewBox="0 0 73.323 64"
             height="64"
+            onMouseEnter={handleMouseEnterTrello}
+            onMouseLeave={handleMouseLeaveTrello}
           >
             <defs>
               <linearGradient
@@ -60,8 +72,8 @@ export function FooterBar() {
                 y2="1.51"
                 gradientUnits="userSpaceOnUse"
               >
-                <stop offset=".18" stopColor="#afafaf" />
-                <stop offset="1" stopColor="#afafaf" />
+                <stop offset=".18" stopColor={stopColor} />
+                <stop offset="1" stopColor={stopColor} />
               </linearGradient>
             </defs>
             <path
