@@ -98,9 +98,20 @@ export const usePieStore = create<PieStore>((set) => ({
         if (state.idleInterval) {
           clearInterval(state.idleInterval);
         }
+        /*
+        console.log({
+          speedOffset,
+          expontentialDecay,
+          spinSpeed,
+          newRotation:
+            state.rotation >= 359 ? spinSpeed : state.rotation + spinSpeed,
+        });*/
         return {
           idleInterval: null,
-          rotation: state.rotation >= 359 ? 0 : state.rotation + spinSpeed,
+          rotation:
+            state.rotation >= 359
+              ? spinSpeed
+              : Math.min(360, state.rotation + spinSpeed),
           spinSpeed,
         };
       }
@@ -125,9 +136,14 @@ export const usePieStore = create<PieStore>((set) => ({
   setIsSpinning: (spinning) => set({ isSpinning: spinning }),
   setPieTextModalVisible: (visible) => set({ pieTextModalVisible: visible }),
   setRotation: (spinSpeed) =>
-    set((state) => ({
-      rotation: state.rotation === 359 ? 0 : state.rotation + spinSpeed,
-    })),
+    set((state) => {
+      return {
+        rotation:
+          state.rotation >= 359
+            ? spinSpeed
+            : Math.min(360, state.rotation + spinSpeed),
+      };
+    }),
   showBackdrop: () => set({ backdropVisible: true }),
   setSpinSpeed: (spinSpeed) => set({ spinSpeed }),
   spinInterval: null,

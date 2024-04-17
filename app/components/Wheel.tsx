@@ -36,6 +36,7 @@ export default function Wheel() {
     wheelPadding * 2;
   const angle = 360 / slices.length;
   const adj = 360 - rotation;
+  // how could ADJ be negative?
   const sliceAngleRanges = slices.map((slice, idx) => ({
     ...slice,
     degrees: [idx * angle, (idx + 1) * angle],
@@ -105,11 +106,10 @@ export default function Wheel() {
 
   useEffect(() => {
     if (!winner && typeof isSpinning === "boolean" && !isSpinning) {
-      setWinner(
-        sliceAngleRanges.find((slice) => {
-          return adj >= slice.degrees[0] && adj <= slice.degrees[1];
-        })
-      );
+      const findWinner = sliceAngleRanges.find((slice) => {
+        return adj >= slice.degrees[0] && adj <= slice.degrees[1];
+      });
+      setWinner(findWinner);
     }
   }, [adj, isSpinning, rotation, setWinner, sliceAngleRanges, winner]);
 
