@@ -46,7 +46,9 @@ export type PieStore = {
   hideBackdrop: () => void;
   idleInterval: NodeJS.Timeout | null;
   incrementDuration: () => void;
+  isMuted: boolean | undefined;
   isSpinning: boolean | undefined;
+  mute: () => void;
   optionsModalVisible: boolean;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
@@ -58,13 +60,14 @@ export type PieStore = {
   setIsSpinning: (spinning: boolean) => void;
   setRotation: (spinSpeed: number) => void;
   setSpinSpeed: (spinSpeed: number) => void;
+  setWinner: (winner: Slice | undefined) => void;
   showBackdrop: () => void;
   spinSpeed: number;
   spinInterval: NodeJS.Timeout | null;
   startWheel: () => void;
   stopWheel: () => void;
+  unMute: () => void;
   winner: Slice | undefined;
-  setWinner: (winner: Slice | undefined) => void;
 };
 
 export const usePieStore = create<PieStore>((set) => ({
@@ -92,7 +95,18 @@ export const usePieStore = create<PieStore>((set) => ({
   incrementDuration: () => {
     return set((state) => ({ duration: state.duration + 1 }));
   },
+  isMuted: undefined,
   isSpinning: undefined,
+  mute: () => {
+    return set((state) => {
+      if (state.audio) {
+        state.audio.pause();
+      }
+      return {
+        isMuted: true,
+      };
+    });
+  },
   optionsModalVisible: false,
   pieTextModalVisible: false,
   propagateWheel: () => {
@@ -149,6 +163,7 @@ export const usePieStore = create<PieStore>((set) => ({
     }),
   showBackdrop: () => set({ backdropVisible: true }),
   setSpinSpeed: (spinSpeed) => set({ spinSpeed }),
+  setWinner: (winner: Slice | undefined) => set({ winner }),
   spinInterval: null,
   spinSpeed: DEFAULT_SPEED,
   startWheel: () => {
@@ -156,11 +171,14 @@ export const usePieStore = create<PieStore>((set) => ({
       if (state.audio) {
         state.audio.pause();
       }
-      const audioElement = new Audio("/spin.m4a");
-      audioElement.currentTime = 0.75;
-      audioElement.volume = 0.25;
-      audioElement.playbackRate = 0.8;
-      audioElement?.play();
+      let audioElement;
+      if (!state.isMuted) {
+        audioElement = new Audio("/spin.m4a");
+        audioElement.currentTime = 0.75;
+        audioElement.volume = 0.25;
+        audioElement.playbackRate = 0.8;
+        audioElement?.play();
+      }
 
       if (state.idleInterval) {
         clearInterval(state.idleInterval);
@@ -212,6 +230,15 @@ export const usePieStore = create<PieStore>((set) => ({
       };
     });
   },
+  unMute: () => {
+    return set((state) => {
+      if (state.audio) {
+        state.audio.play();
+      }
+      return {
+        isMuted: false,
+      };
+    });
+  },
   winner: undefined,
-  setWinner: (winner: Slice | undefined) => set({ winner }),
 }));

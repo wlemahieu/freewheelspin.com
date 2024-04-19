@@ -1,6 +1,6 @@
+import { Cog6ToothIcon } from "@heroicons/react/20/solid";
+import { ListBulletIcon } from "@heroicons/react/20/solid";
 import { Link } from "@remix-run/react";
-import { List } from "flowbite-react-icons/outline";
-import { AdjustmentsHorizontal } from "flowbite-react-icons/solid";
 import { useState } from "react";
 import { PieStore, usePieStore } from "~/store/usePieStore";
 
@@ -25,7 +25,7 @@ export function FooterBar() {
           type="button"
           className="inline-flex flex-col items-center justify-center px-5 text-blue-300 hover:text-blue-500 group"
         >
-          <List className="w-10 h-10" />
+          <ListBulletIcon className="w-10 h-10" />
           <span className="sr-only">Pie text</span>
         </button>
         <div
@@ -39,7 +39,7 @@ export function FooterBar() {
           type="button"
           className="inline-flex flex-col items-center justify-center px-5 text-blue-300 hover:text-blue-500 group"
         >
-          <AdjustmentsHorizontal className="w-8 h-8" />
+          <Cog6ToothIcon className="w-8 h-8" />
           <span className="sr-only">Settings</span>
         </button>
         <div

@@ -6,8 +6,9 @@ import {
   useForm,
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
+import { XMarkIcon } from "@heroicons/react/20/solid";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Form, useActionData } from "@remix-run/react";
-import { ChevronDown, Close } from "flowbite-react-icons/outline";
 import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { Modal } from "~/components/Modal";
@@ -117,7 +118,7 @@ function UpdateTextForm() {
                       className="shrink-1"
                       onClick={() => handleRemoveInput(sliceIndex)}
                     >
-                      <Close className="w-6 h-6 text-red-500" />
+                      <XMarkIcon className="w-6 h-6 text-red-500" />
                     </button>
                   ) : null}
                   <div className="relative z-0 w-full group">
@@ -145,7 +146,7 @@ function UpdateTextForm() {
                     }}
                     type="button"
                   >
-                    <ChevronDown className="w-6 h-6" />
+                    <ChevronDownIcon className="w-6 h-6" />
                   </button>
                   <div className="z-10 hidden absolute top-0 ml-[-231px] w-[280px] bg-white rounded-lg shadow dark:bg-gray-800 group-hover:flex flex-col p-3">
                     <span className="text-sm text-white font-semibold text-center w-full">

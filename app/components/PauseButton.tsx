@@ -1,4 +1,4 @@
-import { Pause } from "flowbite-react-icons/solid";
+import { PauseIcon } from "@heroicons/react/20/solid";
 import { twMerge } from "tailwind-merge";
 import { usePieStore } from "~/store/usePieStore";
 
@@ -27,7 +27,7 @@ export function PauseButton() {
           : "bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-500 shadow-blue-500/50 dark:shadow-blue-800/80"
       )}
     >
-      <Pause className="w-5 h-5" />
+      <PauseIcon className="w-5 h-5" />
     </button>
   );
 }

@@ -12,7 +12,10 @@ import { PieTextSchema } from "~/schemas/schemas";
 export const meta: MetaFunction = () => {
   return [
     { title: "Free Wheel Spin" },
-    { name: "description", content: "Spin a wheel with your colleagues!" },
+    {
+      name: "description",
+      content: "Spin a wheel with your friends, family or colleagues!",
+    },
   ];
 };
 

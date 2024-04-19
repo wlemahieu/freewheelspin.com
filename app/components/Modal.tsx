@@ -1,4 +1,4 @@
-import { Close } from "flowbite-react-icons/outline";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -59,7 +59,7 @@ export function Modal({
               className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
               data-modal-hide="default-modal"
             >
-              <Close className="w-[60px] h-[60px]" />
+              <XMarkIcon className="w-[60px] h-[60px]" />
               <span className="sr-only">Close modal</span>
             </button>
           </div>
