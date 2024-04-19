@@ -17,8 +17,8 @@ export function Navbar() {
 
   useEffect(() => {
     const storageIsMuted = getLocalStorage();
-    if (storageIsMuted && ["true", "false"].includes(storageIsMuted)) {
-      const bool = Boolean(storageIsMuted);
+    if (storageIsMuted !== null && ["true", "false"].includes(storageIsMuted)) {
+      const bool = storageIsMuted === "false" ? false : true;
       if (bool && !isMuted) {
         return setMuted(bool);
       }

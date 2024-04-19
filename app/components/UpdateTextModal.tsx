@@ -4,6 +4,7 @@ import {
   getFormProps,
   getInputProps,
   useForm,
+  useInputControl,
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { XMarkIcon } from "@heroicons/react/20/solid";
@@ -73,7 +74,7 @@ function UpdateTextForm() {
   });
   const slices = fields.slices.getFieldList();
 
-  function handleSelectColor(color: string, colorField: FieldMetadata) {
+  function handleSelectColor(color: string, colorField: FieldMetadata<string>) {
     form.update({
       name: colorField.name,
       value: color,

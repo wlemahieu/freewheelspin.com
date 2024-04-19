@@ -7,7 +7,7 @@ export function SpinButton() {
 
   function handleClick() {
     if (isSpinning) {
-      return stopWheel();
+      return stopWheel(true);
     }
     return startWheel();
   }

@@ -12,10 +12,13 @@ const defaultSlices = DEFAULT_OPTIONS.reverse();
 
 export default function Wheel() {
   const {
+    audio,
     isMuted,
     isSpinning,
+    paused,
     rotation,
     rotateIdle,
+    setAudio,
     setSlices,
     setWinner,
     showBackdrop,
@@ -25,7 +28,6 @@ export default function Wheel() {
     stopWheel,
     winner,
   } = usePieStore<PieStore>((state) => state);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const arrowRef = useRef<SVGSVGElement | null>(null);
   const wheelSize = useWheelSize();
   const navbarHeight = 40;
@@ -47,7 +49,7 @@ export default function Wheel() {
 
   function handleClick() {
     if (isSpinning) {
-      return stopWheel();
+      return stopWheel(true);
     }
 
     return startWheel();
@@ -96,9 +98,7 @@ export default function Wheel() {
   }
 
   useEffect(() => {
-    setTimeout(() => {
-      setSlices(getSlices());
-    });
+    setSlices(getSlices());
   }, []);
 
   useEffect(() => {
@@ -127,17 +127,40 @@ export default function Wheel() {
         setAudio(audioElement);
       }
       setWinner(findWinner);
+      const newSlices = slices.filter(
+        (slice) => slice.text !== findWinner?.text
+      );
       const options = localStorage.getItem("options");
       if (options) {
-        const { winnersRemoved } = JSON.parse(options);
-        if (winnersRemoved) {
-          setSlices(slices.filter((slice) => slice.text !== findWinner?.text));
+        const { winnerOnPause, winnersRemoved } = JSON.parse(options);
+        if (winnerOnPause) {
+          if (slices.length > 1) {
+            if (winnersRemoved) {
+              setSlices(newSlices);
+            }
+
+            localStorage.setItem("slices", JSON.stringify(newSlices));
+          } else {
+            // reset
+            setSlices(defaultSlices);
+            localStorage.setItem("slices", JSON.stringify(defaultSlices));
+          }
         }
       } else {
-        setSlices(slices.filter((slice) => slice.text !== findWinner?.text));
+        // detect if no local storage...
+        setSlices(newSlices);
       }
     }
-  }, [adj, audio, isSpinning, rotation, setWinner, sliceAngleRanges, winner]);
+  }, [
+    adj,
+    audio,
+    isSpinning,
+    paused,
+    rotation,
+    setWinner,
+    sliceAngleRanges,
+    winner,
+  ]);
 
   // wheel should use local storage OR default values.
   if (size < 150) {

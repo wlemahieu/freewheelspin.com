@@ -51,6 +51,7 @@ export type PieStore = {
   isSpinning: boolean | undefined;
   mute: () => void;
   optionsModalVisible: boolean;
+  paused: boolean;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
   resetDuration: () => void;
@@ -69,7 +70,7 @@ export type PieStore = {
   spinSpeed: number;
   spinInterval: NodeJS.Timeout | null;
   startWheel: () => void;
-  stopWheel: () => void;
+  stopWheel: (paused?: boolean) => void;
   unMute: () => void;
   winner: Slice | undefined;
 };
@@ -113,6 +114,7 @@ export const usePieStore = create<PieStore>((set) => ({
     });
   },
   optionsModalVisible: false,
+  paused: false,
   pieTextModalVisible: false,
   propagateWheel: () => {
     set((state) => {
@@ -214,7 +216,7 @@ export const usePieStore = create<PieStore>((set) => ({
       };
     });
   },
-  stopWheel: () => {
+  stopWheel: (paused = false) => {
     set((state) => {
       if (state.audio) {
         state.audio.pause();
@@ -234,6 +236,7 @@ export const usePieStore = create<PieStore>((set) => ({
         durationInterval: null,
         isSpinning: false,
         idleInterval: null,
+        paused,
         spinInterval: null,
         spinSpeed: DEFAULT_SPEED,
       };
@@ -242,22 +245,26 @@ export const usePieStore = create<PieStore>((set) => ({
   unMute: () => {
     localStorage.setItem("muted", JSON.stringify(false));
     return set((state) => {
-      if (state.audio) {
-        state.audio.play();
+      if (state.isSpinning) {
+        if (state.audio) {
+          state.audio.play();
+          return {
+            isMuted: false,
+          };
+        }
+        const audioElement = new Audio("/spin.m4a");
+        audioElement.currentTime = 0.75;
+        audioElement.volume = 0.25;
+        audioElement.playbackRate = 0.8;
+        audioElement?.play();
         return {
           isMuted: false,
+          audio: audioElement,
         };
       }
 
-      const audioElement = new Audio("/spin.m4a");
-      audioElement.currentTime = 0.75;
-      audioElement.volume = 0.25;
-      audioElement.playbackRate = 0.8;
-      audioElement?.play();
-
       return {
         isMuted: false,
-        audio: audioElement,
       };
     });
   },

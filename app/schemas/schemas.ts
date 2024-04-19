@@ -14,4 +14,8 @@ export const OptionsSchema = z.object({
     .boolean()
     .optional()
     .transform((arg) => Boolean(arg)),
+  winnerOnPause: z
+    .boolean()
+    .optional()
+    .transform((arg) => Boolean(arg)),
 });
