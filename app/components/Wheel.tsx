@@ -112,6 +112,7 @@ export default function Wheel() {
     }
   }, [showBackdrop, spinSpeed, stopWheel]);
 
+  // detect a winner when wheel stops spinning
   useEffect(() => {
     if (!winner && typeof isSpinning === "boolean" && !isSpinning) {
       const findWinner = sliceAngleRanges.find((slice) => {
@@ -127,40 +128,48 @@ export default function Wheel() {
         setAudio(audioElement);
       }
       setWinner(findWinner);
-      const newSlices = slices.filter(
-        (slice) => slice.text !== findWinner?.text
-      );
-      const options = localStorage.getItem("options");
-      if (options) {
-        const { winnerOnPause, winnersRemoved } = JSON.parse(options);
-        if (winnerOnPause) {
-          if (slices.length > 1) {
-            if (winnersRemoved) {
-              setSlices(newSlices);
-            }
+    }
+  }, [winner, isSpinning, sliceAngleRanges, adj, audio, isMuted]);
 
+  // update wheel after winner is found
+  useEffect(() => {
+    if (winner) {
+      // cant remove last slice
+      if (slices.length > 1) {
+        const newSlices = slices.filter((slice) => slice.text !== winner.text);
+        const options = localStorage.getItem("options");
+        // use stored options stored
+        if (options) {
+          const { winnerOnPause, winnersRemoved } = JSON.parse(options);
+
+          if (winnersRemoved) {
+            if (paused) {
+              if (winnerOnPause) {
+                setSlices(newSlices);
+                return localStorage.setItem(
+                  "slices",
+                  JSON.stringify(newSlices)
+                );
+              }
+            } else {
+              setSlices(newSlices);
+              return localStorage.setItem("slices", JSON.stringify(newSlices));
+            }
+          }
+        } else {
+          // no stored options
+          if (!paused) {
+            setSlices(newSlices);
             localStorage.setItem("slices", JSON.stringify(newSlices));
-          } else {
-            // reset
-            setSlices(defaultSlices);
-            localStorage.setItem("slices", JSON.stringify(defaultSlices));
           }
         }
       } else {
-        // detect if no local storage...
-        setSlices(newSlices);
+        // reset wheel slices
+        setSlices(defaultSlices);
+        localStorage.setItem("slices", JSON.stringify(defaultSlices));
       }
     }
-  }, [
-    adj,
-    audio,
-    isSpinning,
-    paused,
-    rotation,
-    setWinner,
-    sliceAngleRanges,
-    winner,
-  ]);
+  }, [winner]);
 
   // wheel should use local storage OR default values.
   if (size < 150) {

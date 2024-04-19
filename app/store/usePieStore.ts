@@ -45,6 +45,7 @@ export type PieStore = {
   handleOpenPieTextModal: () => void;
   handleClosePieTextModal: () => void;
   hideBackdrop: () => void;
+  idle: boolean | undefined;
   idleInterval: NodeJS.Timeout | null;
   incrementDuration: () => void;
   isMuted: boolean | undefined;
@@ -96,6 +97,7 @@ export const usePieStore = create<PieStore>((set) => ({
     set({ backdropVisible: false, optionsModalVisible: false });
   },
   hideBackdrop: () => set({ backdropVisible: false }),
+  idle: undefined,
   idleInterval: null,
   incrementDuration: () => {
     return set((state) => ({ duration: state.duration + 1 }));
@@ -147,6 +149,8 @@ export const usePieStore = create<PieStore>((set) => ({
     set((state) => {
       if (!state.idleInterval) {
         return {
+          paused: false,
+          idle: true,
           idleInterval: setInterval(() => {
             return state.setRotation(IDLE_SPEED);
           }, ROTATION_INTERVAL_MS),
@@ -202,8 +206,10 @@ export const usePieStore = create<PieStore>((set) => ({
       }
       return {
         audio: audioElement,
+        idle: false,
         idleInterval: null,
         isSpinning: true,
+        paused: false,
         durationInterval: !state.durationInterval
           ? setInterval(state.incrementDuration, 1000)
           : state.durationInterval,
@@ -245,7 +251,7 @@ export const usePieStore = create<PieStore>((set) => ({
   unMute: () => {
     localStorage.setItem("muted", JSON.stringify(false));
     return set((state) => {
-      if (state.isSpinning) {
+      if (state.isSpinning && !state.idle) {
         if (state.audio) {
           state.audio.play();
           return {
