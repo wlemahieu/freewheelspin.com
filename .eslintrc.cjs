@@ -13,6 +13,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
+    tsconfigRootDir: "./",
   },
   env: {
     browser: true,
