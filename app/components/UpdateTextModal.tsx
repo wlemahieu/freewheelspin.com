@@ -38,7 +38,9 @@ const defaultColors = [
 ];
 
 function UpdateTextForm() {
-  const { handleClosePieTextModal } = usePieStore<PieStore>((state) => state);
+  const { handleClosePieTextModal, setSlices } = usePieStore<PieStore>(
+    (state) => state
+  );
   const actionData = useActionData<typeof action>();
   const [form, fields] = useForm({
     constraint: getZodConstraint(PieTextSchema),
@@ -52,6 +54,7 @@ function UpdateTextForm() {
         const { value } = parsed;
         const { slices } = value;
         localStorage.setItem("slices", JSON.stringify(slices));
+        setSlices(slices);
         handleClosePieTextModal();
       }
       return parsed;

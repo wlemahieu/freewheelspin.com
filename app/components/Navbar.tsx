@@ -4,9 +4,29 @@ import { PauseButton } from "./PauseButton";
 import { SpeakerXMarkIcon } from "@heroicons/react/20/solid";
 import { PieStore, usePieStore } from "~/store/usePieStore";
 import { SpeakerWaveIcon } from "@heroicons/react/20/solid";
+import { useEffect } from "react";
 
 export function Navbar() {
-  const { isMuted, mute, unMute } = usePieStore<PieStore>((state) => state);
+  const { isMuted, mute, setMuted, unMute } = usePieStore<PieStore>(
+    (state) => state
+  );
+
+  function getLocalStorage() {
+    return localStorage?.getItem("muted");
+  }
+
+  useEffect(() => {
+    const storageIsMuted = getLocalStorage();
+    if (storageIsMuted && ["true", "false"].includes(storageIsMuted)) {
+      const bool = Boolean(storageIsMuted);
+      if (bool && !isMuted) {
+        return setMuted(bool);
+      }
+      if (!bool && isMuted) {
+        return setMuted(bool);
+      }
+    }
+  }, [getLocalStorage, isMuted]);
 
   return (
     <nav className="z-10 w-full pl-2 pr-2 flex gap-x-2 text-center justify-between text-gray-800 py-2 items-center">
@@ -27,15 +47,17 @@ export function Navbar() {
       </span>
       <span className="flex justify-between gap-x-2">
         <span className="cursor-pointer">
-          {isMuted ? (
-            <span onClick={unMute}>
-              <SpeakerXMarkIcon className="w-8 h-8" />
-            </span>
-          ) : (
-            <span onClick={mute}>
-              <SpeakerWaveIcon className="w-8 h-8" />
-            </span>
-          )}
+          {typeof isMuted === "boolean" ? (
+            isMuted ? (
+              <span onClick={unMute}>
+                <SpeakerXMarkIcon className="w-8 h-8" />
+              </span>
+            ) : (
+              <span onClick={mute}>
+                <SpeakerWaveIcon className="w-8 h-8" />
+              </span>
+            )
+          ) : null}
         </span>
         <Link
           to="mailto:softwarewes@gmail.com"

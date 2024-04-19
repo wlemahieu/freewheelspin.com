@@ -29,6 +29,7 @@ export const DEFAULT_OPTIONS = [
     text: "Karl",
     color: "blue",
   },
+  { text: "Maisey", color: "yellow" },
 ];
 
 export type Slice = { text: string; color: string; degrees?: number[] };
@@ -58,10 +59,13 @@ export type PieStore = {
   setAudio: (audio: HTMLAudioElement) => void;
   setBackdropVisible: (visible: boolean) => void;
   setIsSpinning: (spinning: boolean) => void;
+  setMuted: (muted: boolean) => void;
   setRotation: (spinSpeed: number) => void;
+  setSlices: (slices: Array<Slice>) => void;
   setSpinSpeed: (spinSpeed: number) => void;
   setWinner: (winner: Slice | undefined) => void;
   showBackdrop: () => void;
+  slices: Array<Slice>;
   spinSpeed: number;
   spinInterval: NodeJS.Timeout | null;
   startWheel: () => void;
@@ -95,9 +99,10 @@ export const usePieStore = create<PieStore>((set) => ({
   incrementDuration: () => {
     return set((state) => ({ duration: state.duration + 1 }));
   },
-  isMuted: undefined,
+  isMuted: true,
   isSpinning: undefined,
   mute: () => {
+    localStorage.setItem("muted", JSON.stringify(true));
     return set((state) => {
       if (state.audio) {
         state.audio.pause();
@@ -152,7 +157,8 @@ export const usePieStore = create<PieStore>((set) => ({
   setAudio: (audio) => set({ audio }),
   setBackdropVisible: (visible) => set({ backdropVisible: visible }),
   setIsSpinning: (spinning) => set({ isSpinning: spinning }),
-  setRotation: (spinSpeed) =>
+  setMuted: (muted) => set({ isMuted: muted }),
+  setRotation: (spinSpeed) => {
     set((state) => {
       return {
         rotation:
@@ -160,10 +166,13 @@ export const usePieStore = create<PieStore>((set) => ({
             ? spinSpeed
             : Math.min(360, state.rotation + spinSpeed),
       };
-    }),
+    });
+  },
   showBackdrop: () => set({ backdropVisible: true }),
+  setSlices: (slices) => set({ slices }),
   setSpinSpeed: (spinSpeed) => set({ spinSpeed }),
-  setWinner: (winner: Slice | undefined) => set({ winner }),
+  setWinner: (winner) => set({ winner }),
+  slices: [],
   spinInterval: null,
   spinSpeed: DEFAULT_SPEED,
   startWheel: () => {
@@ -231,12 +240,24 @@ export const usePieStore = create<PieStore>((set) => ({
     });
   },
   unMute: () => {
+    localStorage.setItem("muted", JSON.stringify(false));
     return set((state) => {
       if (state.audio) {
         state.audio.play();
+        return {
+          isMuted: false,
+        };
       }
+
+      const audioElement = new Audio("/spin.m4a");
+      audioElement.currentTime = 0.75;
+      audioElement.volume = 0.25;
+      audioElement.playbackRate = 0.8;
+      audioElement?.play();
+
       return {
         isMuted: false,
+        audio: audioElement,
       };
     });
   },

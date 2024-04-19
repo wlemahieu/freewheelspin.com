@@ -1,4 +1,4 @@
-import { ArrowLeft } from "flowbite-react-icons/outline";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useWheelSize } from "~/hooks/useWheelSize";
 import {
@@ -12,19 +12,20 @@ const defaultSlices = DEFAULT_OPTIONS.reverse();
 
 export default function Wheel() {
   const {
+    isMuted,
     isSpinning,
     rotation,
     rotateIdle,
+    setSlices,
+    setWinner,
     showBackdrop,
+    slices,
     spinSpeed,
     startWheel,
     stopWheel,
     winner,
-    setWinner,
   } = usePieStore<PieStore>((state) => state);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  const [slices, setSlices] = useState<Array<Slice>>([]);
-  const pageRef = useRef(null);
   const arrowRef = useRef<SVGSVGElement | null>(null);
   const wheelSize = useWheelSize();
   const navbarHeight = 40;
@@ -87,17 +88,17 @@ export default function Wheel() {
   }
 
   function getSlices() {
-    if (pageRef.current) {
-      const storedSlices = localStorage.getItem("slices");
-      if (storedSlices) {
-        return JSON.parse(storedSlices) as Array<Slice>;
-      }
+    const storedSlices = localStorage.getItem("slices");
+    if (storedSlices) {
+      return JSON.parse(storedSlices) as Array<Slice>;
     }
     return defaultSlices;
   }
 
   useEffect(() => {
-    setSlices(getSlices());
+    setTimeout(() => {
+      setSlices(getSlices());
+    });
   }, []);
 
   useEffect(() => {
@@ -119,23 +120,21 @@ export default function Wheel() {
       if (audio) {
         audio.pause();
       }
-      const audioElement = new Audio("/cheer.m4a");
-      audioElement.volume = 0.25;
-      audioElement?.play();
-      setAudio(audioElement);
+      if (!isMuted) {
+        const audioElement = new Audio("/cheer.m4a");
+        audioElement.volume = 0.25;
+        audioElement?.play();
+        setAudio(audioElement);
+      }
       setWinner(findWinner);
       const options = localStorage.getItem("options");
       if (options) {
         const { winnersRemoved } = JSON.parse(options);
         if (winnersRemoved) {
-          setSlices((prevSlices) =>
-            prevSlices.filter((slice) => slice.text !== findWinner?.text)
-          );
+          setSlices(slices.filter((slice) => slice.text !== findWinner?.text));
         }
       } else {
-        setSlices((prevSlices) =>
-          prevSlices.filter((slice) => slice.text !== findWinner?.text)
-        );
+        setSlices(slices.filter((slice) => slice.text !== findWinner?.text));
       }
     }
   }, [adj, audio, isSpinning, rotation, setWinner, sliceAngleRanges, winner]);
@@ -146,115 +145,113 @@ export default function Wheel() {
   }
 
   return (
-    <>
-      <div className="relative" ref={pageRef}>
-        {winner ? (
-          <div
-            className="absolute top-1/2 left-1/2 z-20 w-full"
-            style={{ transform: "translateX(-50%) translateY(-50%)" }}
-          >
-            <div className="flex text-3xl text-white text-center items-center justify-center opacity-90 w-auto h-30 px-8 py-4 bg-gray-800 rounded-lg">
-              <span className="font-bold">{winner?.text}</span>
-              <span className="shrink-0">{` - You won!`}</span>
-            </div>
-          </div>
-        ) : null}
-        <button
-          className="absolute top-0 w-full h-full z-50"
-          style={{
-            borderRadius: "50%",
-            clipPath: `circle()`,
-          }}
-          onClick={handleClick}
-        />
-        <ArrowLeft
-          ref={arrowRef}
-          className="z-20 w-20 h-20 font-thin text-black absolute right-0 top-1/2"
-          style={{ transform: "translateX(80%) translateY(-50%)" }}
-        />
+    <div className="relative">
+      {winner ? (
         <div
-          className="flex justify-center items-center relative"
-          style={{
-            animation: "spin 50ms exponential infinite",
-            transform: `rotate(${rotation}deg)`,
-            width: `${size}px`,
-            height: `${size}px`,
-          }}
+          className="absolute top-1/2 left-1/2 z-20 w-full"
+          style={{ transform: "translateX(-50%) translateY(-50%)" }}
         >
-          {sliceAngleRanges.map((slice, index) => {
-            if (slices.length === 1) {
-              return (
-                <Fragment key={index}>
-                  <div
-                    className="absolute top-0 w-full h-full"
-                    style={{
-                      backgroundColor: slice.color,
-                      borderRadius: "50%",
-                      clipPath: `circle()`,
-                    }}
-                  />
-                  <div
-                    className="z-10 absolute text-5xl"
-                    style={{
-                      left: `50%`,
-                      top: `50%`,
-                      transform: `translate(-50%, -50%)`,
-                    }}
-                  >
-                    {slice.text}
-                  </div>
-                </Fragment>
-              );
-            }
-            const angle = 360 / slices.length;
-            const startAngle = index * angle;
-            const endAngle = (index + 1) * angle;
-            // Convert angles to radians
-            const startAngleRad = (startAngle * Math.PI) / 180;
-            const endAngleRad = (endAngle * Math.PI) / 180;
-            const w = size / 2;
-            // Calculate coordinates for the points of the slice
-            const x1 = Math.cos(startAngleRad) * w + w;
-            const y1 = Math.sin(startAngleRad) * w + w;
-            const x2 = Math.cos(endAngleRad) * w + w;
-            const y2 = Math.sin(endAngleRad) * w + w;
-
-            // Calculate the large-arc-flag for the arc command
-            const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
-            const titleAngle = startAngle + angle / 2; // Calculate the angle for the title
-
-            // Convert title angle to radians
-            const titleAngleRad = (titleAngle * Math.PI) / 180;
-
-            // Calculate the coordinates for positioning the title
-            const titleX = Math.cos(titleAngleRad) * (w / 2) + w; // Adjust radius as needed
-            const titleY = Math.sin(titleAngleRad) * (w / 2) + w; // Adjust radius as needed
-
+          <div className="flex text-3xl text-white text-center items-center justify-center opacity-90 w-auto h-30 px-8 py-4 bg-gray-800 rounded-lg">
+            <span className="font-bold">{winner?.text}</span>
+            <span className="shrink-0">{` - You won!`}</span>
+          </div>
+        </div>
+      ) : null}
+      <button
+        className="absolute top-0 w-full h-full z-50"
+        style={{
+          borderRadius: "50%",
+          clipPath: `circle()`,
+        }}
+        onClick={handleClick}
+      />
+      <ArrowLeftIcon
+        ref={arrowRef}
+        className="z-20 w-20 h-20 font-thin text-black absolute right-0 top-1/2"
+        style={{ transform: "translateX(80%) translateY(-50%)" }}
+      />
+      <div
+        className="flex justify-center items-center relative"
+        style={{
+          animation: "spin 50ms exponential infinite",
+          transform: `rotate(${rotation}deg)`,
+          width: `${size}px`,
+          height: `${size}px`,
+        }}
+      >
+        {sliceAngleRanges.map((slice, index) => {
+          if (slices.length === 1) {
             return (
               <Fragment key={index}>
                 <div
-                  className="absolute top-0 left-0 w-full h-full flex justify-center text-center align-middle items-center"
+                  className="absolute top-0 w-full h-full"
                   style={{
                     backgroundColor: slice.color,
-                    clipPath: `path('M ${w} ${w} L ${w} ${w} L ${x1} ${y1} A ${w} ${w} 0 ${largeArcFlag} 1 ${x2} ${y2} Z')`,
+                    borderRadius: "50%",
+                    clipPath: `circle()`,
                   }}
                 />
                 <div
-                  className="z-10 absolute"
+                  className="z-10 absolute text-5xl"
                   style={{
-                    left: `${titleX}px`,
-                    top: `${titleY}px`,
-                    transform: `translate(-50%, -50%) rotate(${titleAngle}deg)`, // Center the title
-                    fontSize: `${getTextSize(slice.text.length)}px`,
+                    left: `50%`,
+                    top: `50%`,
+                    transform: `translate(-50%, -50%)`,
                   }}
                 >
-                  <span>{slice.text}</span>
+                  {slice.text}
                 </div>
               </Fragment>
             );
-          })}
-        </div>
+          }
+          const angle = 360 / slices.length;
+          const startAngle = index * angle;
+          const endAngle = (index + 1) * angle;
+          // Convert angles to radians
+          const startAngleRad = (startAngle * Math.PI) / 180;
+          const endAngleRad = (endAngle * Math.PI) / 180;
+          const w = size / 2;
+          // Calculate coordinates for the points of the slice
+          const x1 = Math.cos(startAngleRad) * w + w;
+          const y1 = Math.sin(startAngleRad) * w + w;
+          const x2 = Math.cos(endAngleRad) * w + w;
+          const y2 = Math.sin(endAngleRad) * w + w;
+
+          // Calculate the large-arc-flag for the arc command
+          const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+          const titleAngle = startAngle + angle / 2; // Calculate the angle for the title
+
+          // Convert title angle to radians
+          const titleAngleRad = (titleAngle * Math.PI) / 180;
+
+          // Calculate the coordinates for positioning the title
+          const titleX = Math.cos(titleAngleRad) * (w / 2) + w; // Adjust radius as needed
+          const titleY = Math.sin(titleAngleRad) * (w / 2) + w; // Adjust radius as needed
+
+          return (
+            <Fragment key={index}>
+              <div
+                className="absolute top-0 left-0 w-full h-full flex justify-center text-center align-middle items-center"
+                style={{
+                  backgroundColor: slice.color,
+                  clipPath: `path('M ${w} ${w} L ${w} ${w} L ${x1} ${y1} A ${w} ${w} 0 ${largeArcFlag} 1 ${x2} ${y2} Z')`,
+                }}
+              />
+              <div
+                className="z-10 absolute"
+                style={{
+                  left: `${titleX}px`,
+                  top: `${titleY}px`,
+                  transform: `translate(-50%, -50%) rotate(${titleAngle}deg)`, // Center the title
+                  fontSize: `${getTextSize(slice.text.length)}px`,
+                }}
+              >
+                <span>{slice.text}</span>
+              </div>
+            </Fragment>
+          );
+        })}
       </div>
-    </>
+    </div>
   );
 }
