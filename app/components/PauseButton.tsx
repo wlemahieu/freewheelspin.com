@@ -3,12 +3,12 @@ import { twMerge } from "tailwind-merge";
 import { usePieStore } from "~/store/usePieStore";
 
 export function PauseButton() {
-  const { isSpinning, pieTextModalVisible, startWheel, stopWheel } =
+  const { isSpinning, pieTextModalVisible, startWheel, pauseWheel } =
     usePieStore();
 
   function handleClick() {
     if (isSpinning) {
-      return stopWheel(true);
+      return pauseWheel();
     }
     return startWheel();
   }

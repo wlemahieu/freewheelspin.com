@@ -53,6 +53,7 @@ export type PieStore = {
   mute: () => void;
   optionsModalVisible: boolean;
   paused: boolean;
+  pauseWheel: () => void;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
   resetDuration: () => void;
@@ -117,6 +118,11 @@ export const usePieStore = create<PieStore>((set) => ({
   },
   optionsModalVisible: false,
   paused: false,
+  pauseWheel: () =>
+    set((state) => {
+      state.stopWheel(true);
+      return state;
+    }),
   pieTextModalVisible: false,
   propagateWheel: () => {
     set((state) => {
