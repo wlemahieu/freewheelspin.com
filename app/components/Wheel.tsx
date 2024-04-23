@@ -197,10 +197,12 @@ export default function Wheel() {
         }}
         onClick={handleClick}
       />
-      <ArrowLeftIcon
-        ref={arrowRef}
-        className="z-20 w-20 h-20 font-thin text-black absolute right-0 top-1/2"
-        style={{ transform: "translateX(80%) translateY(-50%)" }}
+      <span
+        className="z-10 absolute top-1/2 right-0 bg-black w-[25px] h-[25px]"
+        style={{
+          clipPath: `polygon(0% 50%, 100% 0%, 100% 100%)`,
+          transform: `translateX(70%) translateY(-50%)`,
+        }}
       />
       <div
         className="flex justify-center items-center relative"
