@@ -59,6 +59,7 @@ export type PieStore = {
   paused: boolean;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
+  reset: () => void;
   resetDuration: () => void;
   rotateIdle: () => void;
   rotation: number;
@@ -149,6 +150,7 @@ export const usePieStore = create<PieStore>((set) => ({
       return state;
     });
   },
+  reset: () => set({ slices: DEFAULT_OPTIONS }),
   resetDuration: () => set({ duration: 0 }),
   rotateIdle: () => {
     set((state) => {

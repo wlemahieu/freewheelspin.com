@@ -9,6 +9,7 @@ import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Form, useActionData } from "@remix-run/react";
+import { useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 import { Modal } from "~/components/Modal";
 import { action } from "~/routes/_index";
@@ -58,17 +59,6 @@ function UpdateTextForm() {
       }
       return parsed;
     },
-    defaultValue: (() => {
-      const storedSlices = localStorage.getItem("slices");
-      if (storedSlices) {
-        return {
-          slices: JSON.parse(storedSlices) as Array<Slice>,
-        };
-      }
-      return {
-        slices: DEFAULT_OPTIONS,
-      };
-    })(),
   });
   const slices = fields.slices.getFieldList();
 
@@ -93,6 +83,18 @@ function UpdateTextForm() {
     });
   }
 
+  useEffect(() => {
+    let newSlices = DEFAULT_OPTIONS;
+    const storedSlices = localStorage.getItem("slices");
+    if (storedSlices) {
+      newSlices = JSON.parse(storedSlices) as Array<Slice>;
+    }
+    form.update({
+      name: fields.slices.name,
+      value: newSlices,
+    });
+  }, []);
+
   return (
     <FormProvider context={form.context}>
       <Form {...getFormProps(form)} method="post">
@@ -100,6 +102,8 @@ function UpdateTextForm() {
           {slices.map((sliceField, sliceIndex) => {
             const { text, color } = sliceField.getFieldset();
             const selectedColor = color.initialValue;
+            console.log("color.initialValue", color.initialValue);
+            console.log("color.value", color.value);
             const filteredColors = defaultColors.reduce((newColors, c) => {
               if (
                 selectedColor === c ||

@@ -6,7 +6,7 @@ import {
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { Form, useActionData } from "@remix-run/react";
-import { z } from "zod";
+import { useEffect } from "react";
 import { Modal } from "~/components/Modal";
 import { action } from "~/routes/_index";
 import { OptionsSchema } from "~/schemas/schemas";
@@ -25,26 +25,26 @@ function WheelOptionsForm() {
       });
       if (parsed.status === "success") {
         const { value } = parsed;
-        const options = value;
+        const { options } = value;
         localStorage.setItem("options", JSON.stringify(options));
         handleCloseOptionsModal();
       }
       return parsed;
     },
-    defaultValue: (() => {
-      const storedOptions = localStorage.getItem("options");
-      if (storedOptions) {
-        const options = JSON.parse(storedOptions) as z.infer<
-          typeof OptionsSchema
-        >;
-        return options;
-      }
-      return {
-        winnersRemoved: true,
-        winnerOnPause: false,
-      };
-    })(),
   });
+  const options = fields.options.getFieldset();
+
+  useEffect(() => {
+    let newOptions = { winnersRemoved: true, winnerOnPause: false };
+    const storedOptions = localStorage.getItem("options");
+    if (storedOptions) {
+      newOptions = JSON.parse(storedOptions);
+    }
+    form.update({
+      name: fields.options.name,
+      value: newOptions,
+    });
+  }, []);
 
   return (
     <FormProvider context={form.context}>
@@ -52,11 +52,11 @@ function WheelOptionsForm() {
         <div className="p-4 md:p-5 space-y-4">
           <div className="flex items-center mb-4">
             <input
-              {...getInputProps(fields.winnersRemoved, { type: "checkbox" })}
+              {...getInputProps(options.winnersRemoved, { type: "checkbox" })}
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <label
-              htmlFor={fields.winnersRemoved.id}
+              htmlFor={options.winnersRemoved.id}
               className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
               Winners are removed
@@ -64,11 +64,11 @@ function WheelOptionsForm() {
           </div>
           <div className="flex items-center mb-4">
             <input
-              {...getInputProps(fields.winnerOnPause, { type: "checkbox" })}
+              {...getInputProps(options.winnerOnPause, { type: "checkbox" })}
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <label
-              htmlFor={fields.winnerOnPause.id}
+              htmlFor={options.winnerOnPause.id}
               className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
               Winner on pause

@@ -5,14 +5,20 @@ import { SpeakerXMarkIcon } from "@heroicons/react/20/solid";
 import { PieStore, usePieStore } from "~/store/usePieStore";
 import { SpeakerWaveIcon } from "@heroicons/react/20/solid";
 import { useEffect } from "react";
+import { ArrowPathIcon } from "@heroicons/react/20/solid";
 
 export function Navbar() {
-  const { isMuted, mute, setMuted, unMute } = usePieStore<PieStore>(
+  const { isMuted, mute, setMuted, unMute, reset } = usePieStore<PieStore>(
     (state) => state
   );
 
   function getLocalStorage() {
     return localStorage?.getItem("muted");
+  }
+
+  function resetAll() {
+    reset();
+    return localStorage.clear();
   }
 
   useEffect(() => {
@@ -46,6 +52,11 @@ export function Navbar() {
         <PauseButton />
       </span>
       <span className="flex justify-between gap-x-2 items-center">
+        <span className="cursor-pointer items-center flex flex-col">
+          <button onClick={resetAll}>
+            <ArrowPathIcon className="w-8 h-8" />
+          </button>
+        </span>
         <span className="cursor-pointer items-center flex flex-col">
           {typeof isMuted === "boolean" ? (
             isMuted ? (

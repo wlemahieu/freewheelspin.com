@@ -10,12 +10,14 @@ export const PieTextSchema = z.object({
 });
 
 export const OptionsSchema = z.object({
-  winnersRemoved: z
-    .boolean()
-    .optional()
-    .transform((arg) => Boolean(arg)),
-  winnerOnPause: z
-    .boolean()
-    .optional()
-    .transform((arg) => Boolean(arg)),
+  options: z.object({
+    winnersRemoved: z
+      .boolean()
+      .optional()
+      .transform((arg) => Boolean(arg)),
+    winnerOnPause: z
+      .boolean()
+      .optional()
+      .transform((arg) => Boolean(arg)),
+  }),
 });
