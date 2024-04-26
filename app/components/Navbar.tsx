@@ -45,17 +45,17 @@ export function Navbar() {
       >
         <PauseButton />
       </span>
-      <span className="flex justify-between gap-x-2">
-        <span className="cursor-pointer">
+      <span className="flex justify-between gap-x-2 items-center">
+        <span className="cursor-pointer items-center flex flex-col">
           {typeof isMuted === "boolean" ? (
             isMuted ? (
-              <span onClick={unMute}>
+              <button onClick={unMute}>
                 <SpeakerXMarkIcon className="w-8 h-8" />
-              </span>
+              </button>
             ) : (
-              <span onClick={mute}>
+              <button onClick={mute}>
                 <SpeakerWaveIcon className="w-8 h-8" />
-              </span>
+              </button>
             )
           ) : null}
         </span>

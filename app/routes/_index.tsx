@@ -7,6 +7,7 @@ import { Navbar } from "~/components/Navbar";
 import { UpdateTextModal } from "~/components/UpdateTextModal";
 import Wheel from "~/components/Wheel";
 import { WheelOptionsModal } from "~/components/WheelOptionsModal";
+import { WinnerModal } from "~/components/WinnerModal";
 import { PieTextSchema } from "~/schemas/schemas";
 
 export const meta: MetaFunction = () => {
@@ -40,6 +41,7 @@ export default function Index() {
       </main>
       <UpdateTextModal />
       <WheelOptionsModal />
+      <WinnerModal />
     </>
   );
 }

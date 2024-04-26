@@ -4,13 +4,11 @@ import {
   getFormProps,
   getInputProps,
   useForm,
-  useInputControl,
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Form, useActionData } from "@remix-run/react";
-import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { Modal } from "~/components/Modal";
 import { action } from "~/routes/_index";
@@ -208,7 +206,8 @@ function UpdateTextForm() {
 export function UpdateTextModal() {
   const { handleClosePieTextModal, pieTextModalVisible } =
     usePieStore<PieStore>((state) => state);
-  const pageRef = useRef(null);
+
+  if (!pieTextModalVisible) return null;
 
   return (
     <Modal
@@ -217,8 +216,8 @@ export function UpdateTextModal() {
       modalVisible={pieTextModalVisible}
       title="Update text"
     >
-      <div className="flex flex-col gap-y-2" ref={pageRef}>
-        {pageRef.current ? <UpdateTextForm /> : null}
+      <div className="flex flex-col gap-y-2">
+        <UpdateTextForm />
       </div>
     </Modal>
   );

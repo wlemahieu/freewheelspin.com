@@ -1,5 +1,4 @@
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect } from "react";
 import { useWheelSize } from "~/hooks/useWheelSize";
 import {
   DEFAULT_OPTIONS,
@@ -7,20 +6,16 @@ import {
   Slice,
   usePieStore,
 } from "~/store/usePieStore";
+import { twMerge } from "tailwind-merge";
 
 const defaultSlices = DEFAULT_OPTIONS.reverse();
 
 export default function Wheel() {
   const {
-    audio,
-    isMuted,
     isSpinning,
-    paused,
     rotation,
     rotateIdle,
-    setAudio,
     setSlices,
-    setWinner,
     showBackdrop,
     slices,
     spinSpeed,
@@ -28,7 +23,6 @@ export default function Wheel() {
     stopWheel,
     winner,
   } = usePieStore<PieStore>((state) => state);
-  const arrowRef = useRef<SVGSVGElement | null>(null);
   const wheelSize = useWheelSize();
   const navbarHeight = 40;
   const footerHeight = 64;
@@ -40,16 +34,16 @@ export default function Wheel() {
     navbarHeight -
     wheelPadding * 2;
   const angle = 360 / slices.length;
-  const adj = 360 - rotation;
+
   // how could ADJ be negative?
   const sliceAngleRanges = slices.map((slice, idx) => ({
     ...slice,
     degrees: [idx * angle, (idx + 1) * angle],
   }));
 
-  function handleClick() {
+  function handleSpinWheel() {
     if (isSpinning) {
-      return stopWheel(true);
+      return stopWheel({ paused: true });
     }
 
     return startWheel();
@@ -68,7 +62,8 @@ export default function Wheel() {
     );
 
     // Interpolate font size within the range based on the percentage
-    let fontSize = minFontSize + percentageOfSize * (maxFontSize - minFontSize);
+    const fontSize =
+      minFontSize + percentageOfSize * (maxFontSize - minFontSize);
 
     // Adjust font size based on text length
     /*
@@ -99,7 +94,7 @@ export default function Wheel() {
 
   useEffect(() => {
     setSlices(getSlices());
-  }, []);
+  }, [setSlices]);
 
   useEffect(() => {
     rotateIdle();
@@ -107,69 +102,10 @@ export default function Wheel() {
 
   useEffect(() => {
     if (spinSpeed <= 0) {
-      stopWheel();
+      stopWheel({ findWinner: true });
       showBackdrop();
     }
   }, [showBackdrop, spinSpeed, stopWheel]);
-
-  // detect a winner when wheel stops spinning
-  useEffect(() => {
-    if (!winner && typeof isSpinning === "boolean" && !isSpinning) {
-      const findWinner = sliceAngleRanges.find((slice) => {
-        return adj >= slice.degrees[0] && adj <= slice.degrees[1];
-      });
-      if (audio) {
-        audio.pause();
-      }
-      if (!isMuted) {
-        const audioElement = new Audio("/cheer.m4a");
-        audioElement.volume = 0.25;
-        audioElement?.play();
-        setAudio(audioElement);
-      }
-      setWinner(findWinner);
-    }
-  }, [winner, isSpinning, sliceAngleRanges, adj, audio, isMuted]);
-
-  // update wheel after winner is found
-  useEffect(() => {
-    if (winner) {
-      // cant remove last slice
-      if (slices.length > 1) {
-        const newSlices = slices.filter((slice) => slice.text !== winner.text);
-        const options = localStorage.getItem("options");
-        // use stored options stored
-        if (options) {
-          const { winnerOnPause, winnersRemoved } = JSON.parse(options);
-
-          if (winnersRemoved) {
-            if (paused) {
-              if (winnerOnPause) {
-                setSlices(newSlices);
-                return localStorage.setItem(
-                  "slices",
-                  JSON.stringify(newSlices)
-                );
-              }
-            } else {
-              setSlices(newSlices);
-              return localStorage.setItem("slices", JSON.stringify(newSlices));
-            }
-          }
-        } else {
-          // no stored options
-          if (!paused) {
-            setSlices(newSlices);
-            localStorage.setItem("slices", JSON.stringify(newSlices));
-          }
-        }
-      } else {
-        // reset wheel slices
-        setSlices(defaultSlices);
-        localStorage.setItem("slices", JSON.stringify(defaultSlices));
-      }
-    }
-  }, [winner]);
 
   // wheel should use local storage OR default values.
   if (size < 150) {
@@ -178,24 +114,16 @@ export default function Wheel() {
 
   return (
     <div className="relative">
-      {winner ? (
-        <div
-          className="absolute top-1/2 left-1/2 z-20 w-full"
-          style={{ transform: "translateX(-50%) translateY(-50%)" }}
-        >
-          <div className="flex text-3xl text-white text-center items-center justify-center opacity-90 w-auto h-30 px-8 py-4 bg-gray-800 rounded-lg">
-            <span className="font-bold">{winner?.text}</span>
-            <span className="shrink-0">{` - You won!`}</span>
-          </div>
-        </div>
-      ) : null}
       <button
-        className="absolute top-0 w-full h-full z-50"
+        className={twMerge(
+          "absolute top-0 w-full h-full",
+          winner ? "z-10" : "z-30"
+        )}
         style={{
           borderRadius: "50%",
           clipPath: `circle()`,
         }}
-        onClick={handleClick}
+        onClick={handleSpinWheel}
       />
       <span
         className="z-10 absolute top-1/2 right-0 bg-black w-[25px] h-[25px]"

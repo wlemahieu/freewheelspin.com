@@ -6,14 +6,16 @@ type ModalProps = {
   className: string;
   children: JSX.Element;
   handleCloseModal: () => void;
+  hideHeader?: boolean;
   modalVisible: boolean;
-  title: string;
+  title?: string;
 };
 
 export function Modal({
   className,
   children,
   handleCloseModal,
+  hideHeader = false,
   modalVisible,
   title,
 }: ModalProps) {
@@ -46,13 +48,15 @@ export function Modal({
     >
       <div
         ref={modalRef}
-        className="z-10 relative p-4 w-full max-w-2xl max-h-full items-center opacity-90"
+        className="z-10 relative p-4 w-full max-w-2xl max-h-full items-center opacity-90 bg-white rounded-lg shadow dark:bg-gray-800"
       >
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-800">
+        {!hideHeader ? (
           <div className="flex items-center justify-between p-4 md:p-5 rounded-t">
-            <h3 className="text-3xl font-semibold text-gray-900 dark:text-white">
-              {title}
-            </h3>
+            {title ? (
+              <h3 className="text-3xl font-semibold text-gray-900 dark:text-white">
+                {title}
+              </h3>
+            ) : null}
             <button
               onClick={handleCloseModal}
               type="button"
@@ -63,8 +67,8 @@ export function Modal({
               <span className="sr-only">Close modal</span>
             </button>
           </div>
-          {children}
-        </div>
+        ) : null}
+        {children}
       </div>
     </div>
   );

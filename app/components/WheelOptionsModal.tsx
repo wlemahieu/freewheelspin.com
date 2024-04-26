@@ -6,7 +6,6 @@ import {
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { Form, useActionData } from "@remix-run/react";
-import { useRef } from "react";
 import { z } from "zod";
 import { Modal } from "~/components/Modal";
 import { action } from "~/routes/_index";
@@ -92,7 +91,8 @@ function WheelOptionsForm() {
 export function WheelOptionsModal() {
   const { handleCloseOptionsModal, optionsModalVisible } =
     usePieStore<PieStore>((state) => state);
-  const pageRef = useRef(null);
+
+  if (!optionsModalVisible) return null;
 
   return (
     <Modal
@@ -101,8 +101,8 @@ export function WheelOptionsModal() {
       modalVisible={optionsModalVisible}
       title="Change settings"
     >
-      <div className="flex flex-col gap-y-2" ref={pageRef}>
-        {pageRef.current ? <WheelOptionsForm /> : null}
+      <div className="flex flex-col gap-y-2">
+        <WheelOptionsForm />
       </div>
     </Modal>
   );

@@ -33,6 +33,10 @@ export const DEFAULT_OPTIONS = [
 ];
 
 export type Slice = { text: string; color: string; degrees?: number[] };
+type StopWheelProps = {
+  paused?: boolean;
+  findWinner?: boolean;
+};
 
 export type PieStore = {
   audio: HTMLAudioElement | null;
@@ -44,7 +48,7 @@ export type PieStore = {
   handleCloseOptionsModal: () => void;
   handleOpenPieTextModal: () => void;
   handleClosePieTextModal: () => void;
-  hideBackdrop: () => void;
+  handleCloseWinnerModal: () => void;
   idle: boolean | undefined;
   idleInterval: NodeJS.Timeout | null;
   incrementDuration: () => void;
@@ -53,7 +57,6 @@ export type PieStore = {
   mute: () => void;
   optionsModalVisible: boolean;
   paused: boolean;
-  pauseWheel: () => void;
   pieTextModalVisible: boolean;
   propagateWheel: () => void;
   resetDuration: () => void;
@@ -72,7 +75,7 @@ export type PieStore = {
   spinSpeed: number;
   spinInterval: NodeJS.Timeout | null;
   startWheel: () => void;
-  stopWheel: (paused?: boolean) => void;
+  stopWheel: (props: StopWheelProps) => void;
   unMute: () => void;
   winner: Slice | undefined;
 };
@@ -97,7 +100,8 @@ export const usePieStore = create<PieStore>((set) => ({
   handleCloseOptionsModal: () => {
     set({ backdropVisible: false, optionsModalVisible: false });
   },
-  hideBackdrop: () => set({ backdropVisible: false }),
+  handleCloseWinnerModal: () =>
+    set({ backdropVisible: false, winner: undefined }),
   idle: undefined,
   idleInterval: null,
   incrementDuration: () => {
@@ -118,11 +122,6 @@ export const usePieStore = create<PieStore>((set) => ({
   },
   optionsModalVisible: false,
   paused: false,
-  pauseWheel: () =>
-    set((state) => {
-      state.stopWheel(true);
-      return state;
-    }),
   pieTextModalVisible: false,
   propagateWheel: () => {
     set((state) => {
@@ -212,6 +211,7 @@ export const usePieStore = create<PieStore>((set) => ({
       }
       return {
         audio: audioElement,
+        backdropVisible: false,
         idle: false,
         idleInterval: null,
         isSpinning: true,
@@ -228,7 +228,7 @@ export const usePieStore = create<PieStore>((set) => ({
       };
     });
   },
-  stopWheel: (paused = false) => {
+  stopWheel: ({ paused = false, findWinner = false }) => {
     set((state) => {
       if (state.audio) {
         state.audio.pause();
@@ -242,15 +242,71 @@ export const usePieStore = create<PieStore>((set) => ({
       if (state.idleInterval) {
         clearInterval(state.idleInterval);
       }
+      let audio = state.audio;
+      let slices = state.slices;
+      let winner = state.winner;
+      if (findWinner) {
+        const angle = 360 / slices.length;
+        const sliceAngleRanges = slices.map((slice, idx) => ({
+          ...slice,
+          degrees: [idx * angle, (idx + 1) * angle],
+        }));
+        const adj = 360 - state.rotation;
+        winner = sliceAngleRanges.find((slice) => {
+          return adj >= slice.degrees[0] && adj <= slice.degrees[1];
+        });
+        if (state.audio) {
+          state.audio.pause();
+        }
+        if (!state.isMuted) {
+          audio = new Audio("/cheer.m4a");
+          audio.volume = 0.25;
+          audio?.play();
+        }
+        if (winner) {
+          // cant remove last slice
+          if (slices.length > 1) {
+            const newSlices = slices.filter(
+              (slice) => slice.text !== winner?.text
+            );
+            const options = localStorage.getItem("options");
+            // use stored options stored
+            if (options) {
+              const { winnerOnPause, winnersRemoved } = JSON.parse(options);
+              if (winnersRemoved) {
+                if (state.paused) {
+                  if (winnerOnPause) {
+                    slices = newSlices;
+                  }
+                } else {
+                  slices = newSlices;
+                }
+              }
+            } else {
+              // no stored options
+              if (!state.paused) {
+                slices = newSlices;
+              }
+            }
+          } else {
+            // reset wheel slices
+            slices = DEFAULT_OPTIONS.reverse();
+          }
+        }
+        localStorage.setItem("slices", JSON.stringify(slices));
+      }
+
       return {
-        audio: null,
+        audio,
         duration: 0,
         durationInterval: null,
         isSpinning: false,
         idleInterval: null,
         paused,
+        slices,
         spinInterval: null,
         spinSpeed: DEFAULT_SPEED,
+        winner,
       };
     });
   },
