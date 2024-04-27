@@ -102,8 +102,6 @@ function UpdateTextForm() {
           {slices.map((sliceField, sliceIndex) => {
             const { text, color } = sliceField.getFieldset();
             const selectedColor = color.initialValue;
-            console.log("color.initialValue", color.initialValue);
-            console.log("color.value", color.value);
             const filteredColors = defaultColors.reduce((newColors, c) => {
               if (
                 selectedColor === c ||

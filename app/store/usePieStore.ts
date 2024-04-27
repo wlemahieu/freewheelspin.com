@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-export const DEFAULT_SPEED = 100;
-export const DECAY_RATE = 0.9995;
-export const ROTATION_INTERVAL_MS = 10;
+export const DEFAULT_SPEED = 10;
+export const DECAY_RATE = 0.997; // less means wheel stops sooner
+export const ROTATION_INTERVAL_MS = 15; // Firefox (5ms Chrome?)
 export const IDLE_SPEED = 0.25;
 export const DEFAULT_OPTIONS = [
   {
@@ -54,6 +54,7 @@ export type PieStore = {
   incrementDuration: () => void;
   isMuted: boolean | undefined;
   isSpinning: boolean | undefined;
+  marimba: HTMLAudioElement | null;
   mute: () => void;
   optionsModalVisible: boolean;
   paused: boolean;
@@ -72,6 +73,7 @@ export type PieStore = {
   setSpinSpeed: (spinSpeed: number) => void;
   setWinner: (winner: Slice | undefined) => void;
   showBackdrop: () => void;
+  sliceSound: string | null;
   slices: Array<Slice>;
   spinSpeed: number;
   spinInterval: NodeJS.Timeout | null;
@@ -101,18 +103,20 @@ export const usePieStore = create<PieStore>((set) => ({
   handleCloseOptionsModal: () => {
     set({ backdropVisible: false, optionsModalVisible: false });
   },
-  handleCloseWinnerModal: () =>
-    set({ backdropVisible: false, winner: undefined }),
+  handleCloseWinnerModal: () => {
+    set({ backdropVisible: false, winner: undefined });
+  },
   idle: undefined,
   idleInterval: null,
   incrementDuration: () => {
-    return set((state) => ({ duration: state.duration + 1 }));
+    set((state) => ({ duration: state.duration + 1 }));
   },
   isMuted: true,
   isSpinning: undefined,
+  marimba: null,
   mute: () => {
     localStorage.setItem("muted", JSON.stringify(true));
-    return set((state) => {
+    set((state) => {
       if (state.audio) {
         state.audio.pause();
       }
@@ -127,8 +131,34 @@ export const usePieStore = create<PieStore>((set) => ({
   propagateWheel: () => {
     set((state) => {
       if (state.spinSpeed > 0) {
+        let marimba = state.marimba;
+        let sliceSound = state.sliceSound;
+        if (!marimba) {
+          marimba = new Audio("/marimba.m4a");
+        }
+        const angle = 360 / state.slices.length;
+        const sliceAngleRanges = state.slices.map((slice, idx) => ({
+          ...slice,
+          degrees: [idx * angle, (idx + 1) * angle],
+        }));
+        if (!state.isMuted) {
+          const adj = 360 - state.rotation;
+          sliceAngleRanges.forEach((slice) => {
+            if (
+              sliceSound !== slice.text &&
+              adj >= slice.degrees[0] &&
+              adj <= slice.degrees[1]
+            ) {
+              const c = marimba.cloneNode(true) as HTMLAudioElement;
+              c.volume = 0.25;
+              c.playbackRate = 5;
+              c.play();
+              sliceSound = slice.text;
+            }
+          });
+        }
         const speedOffset = DEFAULT_SPEED - state.spinSpeed;
-        const expontentialDecay = speedOffset ? speedOffset / 10000 : 0;
+        const expontentialDecay = speedOffset ? speedOffset / 2000 : 0;
         // without expontentialDecay, the wheel will never stop.
         // 300 default speed equates to a 0-0.03 expontentialDecay
         // create a random number to randomize the spin a bit
@@ -140,10 +170,12 @@ export const usePieStore = create<PieStore>((set) => ({
         }
         return {
           idleInterval: null,
+          marimba,
           rotation:
             state.rotation >= 359
               ? spinSpeed
               : Math.min(360, state.rotation + spinSpeed),
+          sliceSound,
           spinSpeed,
         };
       }
@@ -158,9 +190,10 @@ export const usePieStore = create<PieStore>((set) => ({
         return {
           paused: false,
           idle: true,
-          idleInterval: setInterval(() => {
-            return state.setRotation(IDLE_SPEED);
-          }, ROTATION_INTERVAL_MS),
+          idleInterval: setInterval(
+            () => state.setRotation(IDLE_SPEED),
+            ROTATION_INTERVAL_MS
+          ),
         };
       }
       return state;
@@ -182,6 +215,7 @@ export const usePieStore = create<PieStore>((set) => ({
     });
   },
   showBackdrop: () => set({ backdropVisible: true }),
+  sliceSound: null,
   setSlices: (slices) => set({ slices }),
   setSpinSpeed: (spinSpeed) => set({ spinSpeed }),
   setWinner: (winner) => set({ winner }),
@@ -192,14 +226,6 @@ export const usePieStore = create<PieStore>((set) => ({
     set((state) => {
       if (state.audio) {
         state.audio.pause();
-      }
-      let audioElement;
-      if (!state.isMuted) {
-        audioElement = new Audio("/spin.m4a");
-        audioElement.currentTime = 0.75;
-        audioElement.volume = 0.25;
-        audioElement.playbackRate = 0.8;
-        audioElement?.play();
       }
 
       if (state.idleInterval) {
@@ -212,7 +238,6 @@ export const usePieStore = create<PieStore>((set) => ({
         clearInterval(state.spinInterval);
       }
       return {
-        audio: audioElement,
         backdropVisible: false,
         idle: false,
         idleInterval: null,
@@ -314,29 +339,7 @@ export const usePieStore = create<PieStore>((set) => ({
   },
   unMute: () => {
     localStorage.setItem("muted", JSON.stringify(false));
-    return set((state) => {
-      if (state.isSpinning && !state.idle) {
-        if (state.audio) {
-          state.audio.play();
-          return {
-            isMuted: false,
-          };
-        }
-        const audioElement = new Audio("/spin.m4a");
-        audioElement.currentTime = 0.75;
-        audioElement.volume = 0.25;
-        audioElement.playbackRate = 0.8;
-        audioElement?.play();
-        return {
-          isMuted: false,
-          audio: audioElement,
-        };
-      }
-
-      return {
-        isMuted: false,
-      };
-    });
+    set({ isMuted: false });
   },
   winner: undefined,
 }));
