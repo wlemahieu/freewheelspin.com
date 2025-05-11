@@ -6,9 +6,8 @@
  */
 import * as THREE from "three";
 
-const VISIBLE_HITBOXES = false;
-
 export default function SegmentHitbox({
+  VISIBLE_HITBOXES,
   index,
   hitBoxX,
   hitBoxZ,
@@ -16,6 +15,7 @@ export default function SegmentHitbox({
   name,
   segmentRefs,
 }: {
+  VISIBLE_HITBOXES: boolean;
   index: number;
   hitBoxX: number;
   hitBoxZ: number;
@@ -34,6 +34,7 @@ export default function SegmentHitbox({
       visible={VISIBLE_HITBOXES}
     >
       <boxGeometry args={[1, 3.2]} />
+      <meshStandardMaterial side={THREE.DoubleSide} />
     </mesh>
   );
 }

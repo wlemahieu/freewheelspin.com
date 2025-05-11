@@ -6,20 +6,23 @@ import SegmentHitbox from "./_Spinner/SegmentHitbox";
 import SegmentSlice from "./_Spinner/SegmentSlice";
 
 type Props = {
+  VISIBLE_HITBOXES: boolean;
   currentName: string;
   names: string[];
   faceCount: number;
   isSpinning: boolean;
   setIsSpinning: (isSpinning: boolean) => void;
-  segmentRefs: React.RefObject<THREE.Mesh[]>;
+  segmentRefs: React.RefObject<
+    THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[]
+  >;
   pickerRef?: React.RefObject<THREE.Mesh | null>;
   setCurrentName: (name: string) => void;
 };
 
 const radius = 5;
-const VISIBLE_HITBOXES = false;
 
 export default function Spinner({
+  VISIBLE_HITBOXES,
   names,
   faceCount,
   isSpinning,
@@ -57,32 +60,30 @@ export default function Spinner({
     raycaster.set(pickerPosition, rayDirection);
 
     // Perform raycasting
-    const intersects = raycaster.intersectObjects(segmentRefs.current);
-
-    // Find the first intersected segment
-    const firstIntersectedSegment = intersects[0]?.object as THREE.Mesh;
-    if (firstIntersectedSegment) {
-      (
-        firstIntersectedSegment.material as THREE.MeshStandardMaterial
-      ).color.set("red");
-      setCurrentName(firstIntersectedSegment.name);
-    }
+    const intersects = raycaster.intersectObjects<
+      THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
+    >(segmentRefs.current);
 
     if (VISIBLE_HITBOXES) {
       // Reset all segments to default color
       segmentRefs.current.forEach((segment) => {
-        if (segment) {
-          (segment.material as THREE.MeshStandardMaterial).color.set("white");
-        }
+        segment.material.color.set("white");
       });
 
       // Highlight intersected segments
       intersects.forEach((intersect) => {
-        const segment = intersect.object as THREE.Mesh;
-        if (segment) {
-          (segment.material as THREE.MeshStandardMaterial).color.set("yellow");
-        }
+        const segment = intersect.object;
+        segment.material.color.set("yellow");
       });
+    }
+
+    // Find the first intersected segment
+    const firstIntersectedSegment = intersects[0]?.object;
+    if (firstIntersectedSegment) {
+      if (VISIBLE_HITBOXES) {
+        firstIntersectedSegment.material.color.set("red");
+      }
+      setCurrentName(firstIntersectedSegment.name);
     }
   });
 
@@ -116,6 +117,7 @@ export default function Spinner({
         return (
           <Fragment key={name}>
             <SegmentHitbox
+              VISIBLE_HITBOXES={VISIBLE_HITBOXES}
               index={index}
               hitBoxX={hitBoxX}
               hitBoxZ={hitBoxZ}
@@ -133,7 +135,6 @@ export default function Spinner({
               textX={textX}
               textZ={textZ}
               textAngle={textAngle}
-              isCurrent={isCurrent}
             />
           </Fragment>
         );
