@@ -32,14 +32,34 @@ export default function Scene() {
   const [currentName, setCurrentName] = useState("");
   const [shuffledNames, setShuffledNames] = useState<string[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isUserInteracted, setIsUserInteracted] = useState(false);
 
   useEffect(() => {
-    if (currentName) {
-      const audio = new Audio(clickSound);
-      audio.volume = 0.25;
-      audio.play();
+    const enableAudio = () => setIsUserInteracted(true);
+    window.addEventListener("click", enableAudio, { once: true });
+    window.addEventListener("keydown", enableAudio, { once: true });
+
+    return () => {
+      window.removeEventListener("click", enableAudio);
+      window.removeEventListener("keydown", enableAudio);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (currentName && isUserInteracted) {
+      const playAudio = async () => {
+        try {
+          const audio = new Audio(clickSound);
+          audio.volume = 0.25;
+          await audio.play();
+        } catch (error) {
+          console.error("Audio playback failed:", error);
+        }
+      };
+
+      playAudio();
     }
-  }, [currentName]);
+  }, [currentName, isUserInteracted]);
 
   useEffect(() => {
     const shuffled = shuffleArray([...names]);
