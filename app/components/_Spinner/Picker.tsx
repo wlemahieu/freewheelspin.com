@@ -8,10 +8,10 @@ export default function Picker({
   return (
     <mesh
       ref={pickerRef}
-      position={[-7, -0.1, 0]}
+      position={[-6, -0.1, 0]}
       rotation={[0, 0, Math.PI / 2]}
     >
-      <boxGeometry args={[0.1, 2, 0.1]} />
+      <boxGeometry args={[0.5, 2, 0.1]} />
       <meshStandardMaterial color="yellow" />
     </mesh>
   );

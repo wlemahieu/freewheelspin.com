@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Spinner from "./Spinner";
 import Overlay from "./Overlay";
 import * as THREE from "three";
-import usePicker from "./_Spinner/usePicker";
 import Picker from "./_Spinner/Picker";
 
 const names = [
@@ -33,19 +32,12 @@ export default function Scene() {
   const segmentRefs = useRef<THREE.Mesh[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  console.log("", { currentName });
+  //console.log("", { currentName });
 
   useEffect(() => {
     const shuffled = shuffleArray([...names]);
     setShuffledNames(shuffled);
   }, [names]);
-
-  usePicker({
-    isSpinning,
-    segmentRefs,
-    setCurrentName,
-    pickerRef,
-  });
 
   return (
     <>
@@ -53,7 +45,7 @@ export default function Scene() {
       <Canvas
         camera={{ position: [0, 15, 0], fov: 60 }}
         onCreated={({ gl }) => {
-          //gl.setClearColor("#000000");
+          gl.setClearColor("#000000");
         }}
       >
         {/* <axesHelper scale={10} /> */}
@@ -65,12 +57,12 @@ export default function Scene() {
         <Spinner
           names={shuffledNames}
           faceCount={faceCount}
-          setCurrentName={setCurrentName}
           isSpinning={isSpinning}
           setIsSpinning={setIsSpinning}
           segmentRefs={segmentRefs}
+          pickerRef={pickerRef}
+          setCurrentName={setCurrentName}
         />
-        <mesh />
       </Canvas>
     </>
   );

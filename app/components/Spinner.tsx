@@ -1,16 +1,18 @@
-import { Text } from "@react-three/drei";
-import { useRef, useState } from "react";
+import { Fragment, useState } from "react";
+import { useFrame } from "@react-three/fiber";
 import useSpinner from "./_Spinner/useSpinner";
 import * as THREE from "three";
-import usePicker from "./_Spinner/usePicker";
+import SegmentHitbox from "./_Spinner/SegmentHitbox";
+import SegmentSlice from "./_Spinner/SegmentSlice";
 
 type Props = {
   names: string[];
   faceCount: number;
-  setCurrentName: (name: string) => void;
   isSpinning: boolean;
   setIsSpinning: (isSpinning: boolean) => void;
   segmentRefs: React.RefObject<THREE.Mesh[]>;
+  pickerRef?: React.RefObject<THREE.Mesh | null>;
+  setCurrentName: (name: string) => void;
 };
 
 const radius = 5;
@@ -18,16 +20,17 @@ const radius = 5;
 export default function Spinner({
   names,
   faceCount,
-  setCurrentName,
   isSpinning,
   setIsSpinning,
   segmentRefs,
+  pickerRef,
+  setCurrentName,
 }: Props) {
   const [spinVelocity, setSpinVelocity] = useState(0);
+  const [rayDirection] = useState(new THREE.Vector3(1, 0, 0));
+  const [pickerPosition] = useState(new THREE.Vector3());
+  const [raycaster] = useState(new THREE.Raycaster());
   const spinner = useSpinner({
-    names,
-    faceCount,
-    setCurrentName,
     spinVelocity,
     isSpinning,
     setSpinVelocity,
@@ -41,70 +44,84 @@ export default function Spinner({
     }
   };
 
+  useFrame(() => {
+    if (!pickerRef?.current || !segmentRefs.current) return;
+
+    // Update picker position
+    pickerRef.current.getWorldPosition(pickerPosition);
+
+    // Set raycaster origin and direction
+    raycaster.set(pickerPosition, rayDirection);
+
+    // Perform raycasting
+    const intersects = raycaster.intersectObjects(segmentRefs.current);
+
+    // Reset all segments to default color
+    segmentRefs.current.forEach((segment) => {
+      if (segment) {
+        (segment.material as THREE.MeshStandardMaterial).color.set("white");
+      }
+    });
+
+    // Highlight intersected segments
+    intersects.forEach((intersect) => {
+      const segment = intersect.object as THREE.Mesh;
+      (segment.material as THREE.MeshStandardMaterial).color.set("yellow");
+    });
+
+    // Find the first intersected segment
+    const firstIntersectedSegment = intersects[0]?.object as THREE.Mesh;
+    (firstIntersectedSegment.material as THREE.MeshStandardMaterial).color.set(
+      "red"
+    );
+    setCurrentName(firstIntersectedSegment.name);
+  });
+
   return (
-    <>
-      <group ref={spinner} onClick={handleClick}>
-        {names.map((name: string, index: number) => {
-          const cylinderThetaStart = (index / faceCount) * Math.PI * 2;
-          const cylinderThetaLength = (1 / faceCount) * Math.PI * 2;
-          const textThetaStart = (index / faceCount) * Math.PI * 2;
-          const textThetaLength = (1 / faceCount) * Math.PI * 2;
+    <group ref={spinner}>
+      <mesh onClick={handleClick} visible={false}>
+        <boxGeometry args={[10, 3, 10]} />
+      </mesh>
 
-          const textAngle = textThetaStart + textThetaLength;
-          const textX = Math.cos(textAngle) * (radius - 2);
-          const textZ = Math.sin(textAngle) * (radius - 2);
-          const deterministicColor = `hsl(${
-            (index / faceCount) * 360
-          }, 100%, 50%)`;
+      {names.map((name: string, index: number) => {
+        const cylinderThetaStart = (index / faceCount) * Math.PI * 2;
+        const cylinderThetaLength = (1 / faceCount) * Math.PI * 2;
+        const textThetaStart = (index / faceCount) * Math.PI * 2;
+        const textThetaLength = (1 / faceCount) * Math.PI * 2;
 
-          return (
-            <mesh
+        const textAngle = textThetaStart + textThetaLength;
+        const textX = Math.cos(textAngle) * (radius - 2);
+        const textZ = Math.sin(textAngle) * (radius - 2);
+        const hitBoxX = Math.cos(textAngle) * (radius - 0.5);
+        const hitBoxZ = Math.sin(textAngle) * (radius - 0.5);
+        const deterministicColor = `hsl(${
+          (index / faceCount) * 360
+        }, 100%, 50%)`;
+
+        return (
+          <Fragment key={name}>
+            <SegmentHitbox
+              index={index}
+              hitBoxX={hitBoxX}
+              hitBoxZ={hitBoxZ}
+              textAngle={textAngle}
               name={name}
-              ref={(el) => {
-                if (el) segmentRefs.current[index] = el; // Assign each segment to the array
-              }}
-              key={index}
-            >
-              <meshPhysicalMaterial
-                color={deterministicColor}
-                clearcoat={1}
-                clearcoatRoughness={0.25}
-                roughness={0.5}
-                metalness={0.5}
-                transmission={1}
-                thickness={0.1}
-                ior={1.5}
-                envMapIntensity={1}
-                opacity={0.8}
-                side={THREE.DoubleSide}
-              />
-              <cylinderGeometry
-                args={[
-                  radius,
-                  radius,
-                  1,
-                  32,
-                  1,
-                  false,
-                  cylinderThetaStart,
-                  cylinderThetaLength,
-                ]}
-              />
-              <Text
-                key={`text-${index}`}
-                position={[textX, 0.6, textZ]} // Slightly above the mesh
-                rotation={[-Math.PI / 2, 0, -textAngle]} // Rotate to face upward
-                fontSize={0.75}
-                color="white"
-                anchorX="center"
-                anchorY="middle"
-              >
-                {name}
-              </Text>
-            </mesh>
-          );
-        })}
-      </group>
-    </>
+              segmentRefs={segmentRefs}
+            />
+            <SegmentSlice
+              deterministicColor={deterministicColor}
+              index={index}
+              name={name}
+              radius={radius}
+              cylinderThetaStart={cylinderThetaStart}
+              cylinderThetaLength={cylinderThetaLength}
+              textX={textX}
+              textZ={textZ}
+              textAngle={textAngle}
+            />
+          </Fragment>
+        );
+      })}
+    </group>
   );
 }
