@@ -5,6 +5,7 @@ import Spinner from "./Spinner";
 import Overlay from "./Overlay";
 import * as THREE from "three";
 import Picker from "./_Spinner/Picker";
+import clickSound from "~/assets/marimba.m4a";
 
 const names = [
   "Alice",
@@ -33,6 +34,12 @@ export default function Scene() {
   const [isSpinning, setIsSpinning] = useState(false);
 
   //console.log("", { currentName });
+
+  useEffect(() => {
+    const audio = new Audio(clickSound);
+    audio.volume = 0.25;
+    audio.play();
+  }, [currentName]);
 
   useEffect(() => {
     const shuffled = shuffleArray([...names]);

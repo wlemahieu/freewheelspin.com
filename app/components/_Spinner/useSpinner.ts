@@ -1,7 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef, type Dispatch } from "react";
 import type { Mesh } from "three";
-import clickSound from "~/assets/marimba.m4a";
 
 type Props = {
   spinVelocity: number;
@@ -26,8 +25,6 @@ export default function useSpinner({
         setSpinVelocity((prev) =>
           Math.max(prev - 0.0005 - Math.random() * 0.0002, 0)
         );
-        //const audio = new Audio(clickSound);
-        //audio.play();
       } else if (isSpinning) {
         setIsSpinning(false);
       }
