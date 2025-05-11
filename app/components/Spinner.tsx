@@ -6,6 +6,7 @@ import SegmentHitbox from "./_Spinner/SegmentHitbox";
 import SegmentSlice from "./_Spinner/SegmentSlice";
 
 type Props = {
+  currentName: string;
   names: string[];
   faceCount: number;
   isSpinning: boolean;
@@ -16,6 +17,7 @@ type Props = {
 };
 
 const radius = 5;
+const VISIBLE_HITBOXES = false;
 
 export default function Spinner({
   names,
@@ -24,10 +26,11 @@ export default function Spinner({
   setIsSpinning,
   segmentRefs,
   pickerRef,
+  currentName,
   setCurrentName,
 }: Props) {
   const [spinVelocity, setSpinVelocity] = useState(0);
-  const [rayDirection] = useState(new THREE.Vector3(1, 0, 0));
+  const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
   const [pickerPosition] = useState(new THREE.Vector3());
   const [raycaster] = useState(new THREE.Raycaster());
   const spinner = useSpinner({
@@ -56,30 +59,41 @@ export default function Spinner({
     // Perform raycasting
     const intersects = raycaster.intersectObjects(segmentRefs.current);
 
-    // Reset all segments to default color
-    segmentRefs.current.forEach((segment) => {
-      if (segment) {
-        (segment.material as THREE.MeshStandardMaterial).color.set("white");
-      }
-    });
-
-    // Highlight intersected segments
-    intersects.forEach((intersect) => {
-      const segment = intersect.object as THREE.Mesh;
-      (segment.material as THREE.MeshStandardMaterial).color.set("yellow");
-    });
-
     // Find the first intersected segment
     const firstIntersectedSegment = intersects[0]?.object as THREE.Mesh;
-    (firstIntersectedSegment.material as THREE.MeshStandardMaterial).color.set(
-      "red"
-    );
-    setCurrentName(firstIntersectedSegment.name);
+    if (firstIntersectedSegment) {
+      (
+        firstIntersectedSegment.material as THREE.MeshStandardMaterial
+      ).color.set("red");
+      setCurrentName(firstIntersectedSegment.name);
+    }
+
+    if (VISIBLE_HITBOXES) {
+      // Reset all segments to default color
+      segmentRefs.current.forEach((segment) => {
+        if (segment) {
+          (segment.material as THREE.MeshStandardMaterial).color.set("white");
+        }
+      });
+
+      // Highlight intersected segments
+      intersects.forEach((intersect) => {
+        const segment = intersect.object as THREE.Mesh;
+        if (segment) {
+          (segment.material as THREE.MeshStandardMaterial).color.set("yellow");
+        }
+      });
+    }
   });
 
   return (
     <group ref={spinner}>
-      <mesh onClick={handleClick} visible={false}>
+      <mesh
+        onClick={handleClick}
+        onPointerOver={(e) => (document.body.style.cursor = "pointer")}
+        onPointerOut={(e) => (document.body.style.cursor = "default")}
+        visible={false}
+      >
         <boxGeometry args={[10, 3, 10]} />
       </mesh>
 
@@ -88,6 +102,7 @@ export default function Spinner({
         const cylinderThetaLength = (1 / faceCount) * Math.PI * 2;
         const textThetaStart = (index / faceCount) * Math.PI * 2;
         const textThetaLength = (1 / faceCount) * Math.PI * 2;
+        const isCurrent = currentName === name;
 
         const textAngle = textThetaStart + textThetaLength;
         const textX = Math.cos(textAngle) * (radius - 2);
@@ -118,6 +133,7 @@ export default function Spinner({
               textX={textX}
               textZ={textZ}
               textAngle={textAngle}
+              isCurrent={isCurrent}
             />
           </Fragment>
         );

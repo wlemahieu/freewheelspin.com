@@ -11,6 +11,7 @@ type Props = {
   textX: number;
   textZ: number;
   textAngle: number;
+  isCurrent: boolean;
 };
 
 export default function SegmentSlice({
@@ -23,6 +24,7 @@ export default function SegmentSlice({
   textX,
   textZ,
   textAngle,
+  isCurrent,
 }: Props) {
   return (
     <mesh raycast={() => null}>
@@ -55,8 +57,8 @@ export default function SegmentSlice({
         key={`text-${index}`}
         position={[textX, 0.6, textZ]}
         rotation={[-Math.PI / 2, 0, -textAngle]}
-        fontSize={0.75}
-        color="white"
+        fontSize={0.6}
+        color={"white"}
         anchorX="center"
         anchorY="middle"
       >

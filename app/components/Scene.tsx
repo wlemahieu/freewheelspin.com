@@ -27,18 +27,18 @@ function shuffleArray(array: string[]) {
 const faceCount = names.length;
 
 export default function Scene() {
-  const [currentName, setCurrentName] = useState("");
-  const [shuffledNames, setShuffledNames] = useState<string[]>([]);
   const pickerRef = useRef<THREE.Mesh>(null);
   const segmentRefs = useRef<THREE.Mesh[]>([]);
+  const [currentName, setCurrentName] = useState("");
+  const [shuffledNames, setShuffledNames] = useState<string[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  //console.log("", { currentName });
-
   useEffect(() => {
-    const audio = new Audio(clickSound);
-    audio.volume = 0.25;
-    audio.play();
+    if (currentName) {
+      const audio = new Audio(clickSound);
+      audio.volume = 0.25;
+      audio.play();
+    }
   }, [currentName]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function Scene() {
     <>
       <Overlay currentName={currentName} />
       <Canvas
-        camera={{ position: [0, 15, 0], fov: 60 }}
+        camera={{ position: [0, 15, 10], fov: 60 }}
         onCreated={({ gl }) => {
           gl.setClearColor("#000000");
         }}
@@ -59,7 +59,10 @@ export default function Scene() {
         <ambientLight scale={25} intensity={0.2} />
         <directionalLight color="white" position={[5, 15, 0]} intensity={1} />
         <directionalLight color="white" position={[-5, -15, 0]} intensity={1} />
-        <OrbitControls autoRotate={false} />
+        <OrbitControls
+          autoRotate={true}
+          maxPolarAngle={Math.PI / 3} // Prevent going under the wheel
+        />
         <Picker pickerRef={pickerRef} />
         <Spinner
           names={shuffledNames}
@@ -68,6 +71,7 @@ export default function Scene() {
           setIsSpinning={setIsSpinning}
           segmentRefs={segmentRefs}
           pickerRef={pickerRef}
+          currentName={currentName}
           setCurrentName={setCurrentName}
         />
       </Canvas>
