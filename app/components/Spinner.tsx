@@ -4,45 +4,30 @@ import useSpinner from "./_Spinner/useSpinner";
 import * as THREE from "three";
 import SegmentHitbox from "./_Spinner/SegmentHitbox";
 import SegmentSlice from "./_Spinner/SegmentSlice";
+import { useSpinnerStore, usePicker } from "./useStore";
 
 type Props = {
-  VISIBLE_HITBOXES: boolean;
-  currentName: string;
-  names: string[];
-  faceCount: number;
-  isSpinning: boolean;
-  setIsSpinning: (isSpinning: boolean) => void;
   segmentRefs: React.RefObject<
     THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[]
   >;
-  pickerRef?: React.RefObject<THREE.Mesh | null>;
-  setCurrentName: (name: string) => void;
 };
 
 const radius = 5;
 
-export default function Spinner({
-  VISIBLE_HITBOXES,
-  names,
-  faceCount,
-  isSpinning,
-  setIsSpinning,
-  segmentRefs,
-  pickerRef,
-  currentName,
-  setCurrentName,
-}: Props) {
+export default function Spinner({ segmentRefs }: Props) {
+  const picker = usePicker((state) => state.picker);
+  const { currentName, names, setCurrentName, visibleHitboxes } =
+    useSpinnerStore();
   const [spinVelocity, setSpinVelocity] = useState(0);
+  const { isSpinning, setIsSpinning } = useSpinnerStore();
   const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
   const [pickerPosition] = useState(new THREE.Vector3());
   const [raycaster] = useState(new THREE.Raycaster());
   const spinner = useSpinner({
     spinVelocity,
-    isSpinning,
     setSpinVelocity,
-    setIsSpinning,
   });
-
+  const faceCount = names.length;
   const handleClick = () => {
     if (!isSpinning) {
       setIsSpinning(true);
@@ -51,10 +36,10 @@ export default function Spinner({
   };
 
   useFrame(() => {
-    if (!pickerRef?.current || !segmentRefs.current) return;
+    if (!picker || !segmentRefs.current) return;
 
     // Update picker position
-    pickerRef.current.getWorldPosition(pickerPosition);
+    picker.getWorldPosition(pickerPosition);
 
     // Set raycaster origin and direction
     raycaster.set(pickerPosition, rayDirection);
@@ -64,7 +49,7 @@ export default function Spinner({
       THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
     >(segmentRefs.current);
 
-    if (VISIBLE_HITBOXES) {
+    if (visibleHitboxes) {
       // Reset all segments to default color
       segmentRefs.current.forEach((segment) => {
         segment.material.color.set("white");
@@ -80,7 +65,7 @@ export default function Spinner({
     // Find the first intersected segment
     const firstIntersectedSegment = intersects[0]?.object;
     if (firstIntersectedSegment) {
-      if (VISIBLE_HITBOXES) {
+      if (visibleHitboxes) {
         firstIntersectedSegment.material.color.set("red");
       }
       setCurrentName(firstIntersectedSegment.name);
@@ -104,7 +89,6 @@ export default function Spinner({
         const textThetaStart = (index / faceCount) * Math.PI * 2;
         const textThetaLength = (1 / faceCount) * Math.PI * 2;
         const isCurrent = currentName === name;
-
         const textAngle = textThetaStart + textThetaLength;
         const textX = Math.cos(textAngle) * (radius - 2);
         const textZ = Math.sin(textAngle) * (radius - 2);
@@ -117,7 +101,6 @@ export default function Spinner({
         return (
           <Fragment key={name}>
             <SegmentHitbox
-              VISIBLE_HITBOXES={VISIBLE_HITBOXES}
               index={index}
               hitBoxX={hitBoxX}
               hitBoxZ={hitBoxZ}

@@ -1,21 +1,16 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef, type Dispatch } from "react";
 import type { Mesh } from "three";
+import { useSpinnerStore } from "../useStore";
 
 type Props = {
   spinVelocity: number;
-  isSpinning: boolean;
   setSpinVelocity: Dispatch<React.SetStateAction<number>>;
-  setIsSpinning: (isSpinning: boolean) => void;
 };
 
-export default function useSpinner({
-  spinVelocity,
-  isSpinning,
-  setSpinVelocity,
-  setIsSpinning,
-}: Props) {
+export default function useSpinner({ spinVelocity, setSpinVelocity }: Props) {
   const spinner = useRef<Mesh>(null);
+  const { isSpinning, setIsSpinning } = useSpinnerStore();
 
   useFrame(() => {
     if (spinner.current) {

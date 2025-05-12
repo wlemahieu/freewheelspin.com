@@ -26,8 +26,8 @@ export default function SegmentSlice({
 }: Props) {
   return (
     <mesh raycast={() => null}>
-      <meshPhongMaterial color={deterministicColor} side={THREE.DoubleSide} />
-      {/* <meshPhysicalMaterial
+      {/* <meshPhongMaterial color={deterministicColor} side={THREE.DoubleSide} /> */}
+      <meshPhysicalMaterial
         color={deterministicColor}
         clearcoat={1}
         clearcoatRoughness={0.25}
@@ -39,7 +39,7 @@ export default function SegmentSlice({
         envMapIntensity={1}
         opacity={0.8}
         side={THREE.DoubleSide}
-      /> */}
+      />
       <cylinderGeometry
         args={[
           radius,

@@ -1,14 +1,15 @@
-import * as THREE from "three";
+import { usePicker } from "../useStore";
 
-export default function Picker({
-  pickerRef,
-}: {
-  pickerRef: React.RefObject<THREE.Mesh | null>;
-}) {
+export default function Picker() {
+  const setPicker = usePicker((state) => state.setPicker);
   return (
     <>
       <mesh
-        ref={pickerRef}
+        ref={(el) => {
+          if (el) {
+            setPicker(el);
+          }
+        }}
         position={[-6, 0, 0]}
         rotation={[0, 0, Math.PI / 2]}
         visible={false}

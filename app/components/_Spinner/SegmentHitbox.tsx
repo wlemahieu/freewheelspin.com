@@ -5,9 +5,9 @@
  * The hitbox is a box geometry that is used for raycasting to detect clicks.
  */
 import * as THREE from "three";
+import { useSpinnerStore } from "../useStore";
 
 export default function SegmentHitbox({
-  VISIBLE_HITBOXES,
   index,
   hitBoxX,
   hitBoxZ,
@@ -15,7 +15,6 @@ export default function SegmentHitbox({
   name,
   segmentRefs,
 }: {
-  VISIBLE_HITBOXES: boolean;
   index: number;
   hitBoxX: number;
   hitBoxZ: number;
@@ -23,6 +22,8 @@ export default function SegmentHitbox({
   name: string;
   segmentRefs: React.RefObject<THREE.Mesh[]>;
 }) {
+  const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
+
   return (
     <mesh
       name={name}
@@ -31,7 +32,7 @@ export default function SegmentHitbox({
       }}
       position={[hitBoxX, 0, hitBoxZ]}
       rotation={[-Math.PI / 2, 0, -textAngle]}
-      visible={VISIBLE_HITBOXES}
+      visible={visibleHitboxes}
     >
       <boxGeometry args={[1, 3.2]} />
       <meshStandardMaterial side={THREE.DoubleSide} />
