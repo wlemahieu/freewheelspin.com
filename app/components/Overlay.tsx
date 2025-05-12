@@ -1,4 +1,3 @@
-import useSpinner from "./_Spinner/useSpinner";
 import { useCameraStore, useSpinnerStore } from "./useStore";
 
 export default function Overlay() {

@@ -6,6 +6,7 @@
  */
 import * as THREE from "three";
 import { useSpinnerStore } from "../useStore";
+import { useRefstore } from "../useStore";
 
 export default function SegmentHitbox({
   index,
@@ -13,22 +14,25 @@ export default function SegmentHitbox({
   hitBoxZ,
   textAngle,
   name,
-  segmentRefs,
 }: {
   index: number;
   hitBoxX: number;
   hitBoxZ: number;
   textAngle: number;
   name: string;
-  segmentRefs: React.RefObject<THREE.Mesh[]>;
 }) {
   const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
+  const { segmentRefs } = useRefstore();
 
   return (
     <mesh
       name={name}
-      ref={(el) => {
-        if (el) segmentRefs.current[index] = el;
+      ref={(
+        el: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial> | null
+      ) => {
+        if (el) {
+          segmentRefs[index] = el;
+        }
       }}
       position={[hitBoxX, 0, hitBoxZ]}
       rotation={[-Math.PI / 2, 0, -textAngle]}

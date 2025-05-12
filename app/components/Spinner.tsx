@@ -1,100 +1,27 @@
-import { Fragment, useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
-import useSpinner from "./_Spinner/useSpinner";
-import * as THREE from "three";
+import { Fragment } from "react";
+import {
+  usePickerTouchingSlice,
+  useSelectWinner,
+  useSpinner,
+} from "./useEffects";
 import SegmentHitbox from "./_Spinner/SegmentHitbox";
 import SegmentSlice from "./_Spinner/SegmentSlice";
-import { useSpinnerStore, usePicker } from "./useStore";
-
-type Props = {
-  segmentRefs: React.RefObject<
-    THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[]
-  >;
-};
+import { useSpinnerStore } from "./useStore";
 
 const radius = 5;
 
-export default function Spinner({ segmentRefs }: Props) {
-  const picker = usePicker((state) => state.picker);
-  const {
-    currentName,
-    isSpinning,
-    setSpinning,
-    names,
-    setCurrentName,
-    setSelectedName,
-    spinCompleted,
-    visibleHitboxes,
-  } = useSpinnerStore();
-  const [spinVelocity, setSpinVelocity] = useState(0);
-  const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
-  const [pickerPosition] = useState(new THREE.Vector3());
-  const [raycaster] = useState(new THREE.Raycaster());
-  const spinner = useSpinner({
-    spinVelocity,
-    setSpinVelocity,
-  });
+export default function Spinner() {
+  const { currentName, names, spinWheel } = useSpinnerStore();
+  const spinner = useSpinner();
   const faceCount = names.length;
-  const handleClick = () => {
-    if (!isSpinning) {
-      setSpinning();
-      setSpinVelocity(0.2);
-    }
-  };
 
-  // set the current name, for audio or dev hitbox troubleshooting
-  useFrame(() => {
-    if (!picker || !segmentRefs.current) return;
-    picker.getWorldPosition(pickerPosition);
-    raycaster.set(pickerPosition, rayDirection);
-    const intersects = raycaster.intersectObjects<
-      THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
-    >(segmentRefs.current);
-
-    if (visibleHitboxes) {
-      // Reset all segments to default color
-      segmentRefs.current.forEach((segment) => {
-        segment.material.color.set("white");
-      });
-
-      // Highlight intersected segments
-      intersects.forEach((intersect) => {
-        const segment = intersect.object;
-        segment.material.color.set("yellow");
-      });
-    }
-
-    const firstIntersectedSegment = intersects[0]?.object;
-    if (firstIntersectedSegment) {
-      if (visibleHitboxes) {
-        firstIntersectedSegment.material.color.set("red");
-      }
-      setCurrentName(firstIntersectedSegment.name);
-    }
-  });
-
-  // set the selected name when the spin is completed
-  useEffect(() => {
-    if (!picker || !segmentRefs.current) return;
-    picker.getWorldPosition(pickerPosition);
-    raycaster.set(pickerPosition, rayDirection);
-
-    const intersects = raycaster.intersectObjects<
-      THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
-    >(segmentRefs.current);
-
-    const firstIntersectedSegment = intersects[0]?.object;
-    if (firstIntersectedSegment) {
-      if (spinCompleted) {
-        setSelectedName(firstIntersectedSegment.name);
-      }
-    }
-  }, [spinCompleted]);
+  usePickerTouchingSlice();
+  useSelectWinner();
 
   return (
     <group ref={spinner}>
       <mesh
-        onClick={handleClick}
+        onClick={spinWheel}
         onPointerOver={(e) => (document.body.style.cursor = "pointer")}
         onPointerOut={(e) => (document.body.style.cursor = "default")}
         visible={false}
@@ -125,7 +52,6 @@ export default function Spinner({ segmentRefs }: Props) {
               hitBoxZ={hitBoxZ}
               textAngle={textAngle}
               name={name}
-              segmentRefs={segmentRefs}
             />
             <SegmentSlice
               deterministicColor={deterministicColor}

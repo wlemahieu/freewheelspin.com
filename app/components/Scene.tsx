@@ -1,6 +1,5 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useRef, useState } from "react";
 import Spinner from "./Spinner";
 import Overlay from "./Overlay";
 import * as THREE from "three";
@@ -10,9 +9,6 @@ import useAudio from "./useAudio";
 
 export default function Scene() {
   useAudio();
-  const segmentRefs = useRef<
-    THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[]
-  >([]);
   const isSpinning = useSpinnerStore((state) => state.isSpinning);
   const { setCamera, view } = useCameraStore();
 
@@ -42,7 +38,7 @@ export default function Scene() {
           maxDistance={15}
         />
         <Picker />
-        <Spinner segmentRefs={segmentRefs} />
+        <Spinner />
       </Canvas>
     </>
   );

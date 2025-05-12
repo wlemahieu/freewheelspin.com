@@ -1,13 +1,13 @@
-import { usePicker } from "../useStore";
+import { useRefstore } from "../useStore";
 
 export default function Picker() {
-  const setPicker = usePicker((state) => state.setPicker);
+  const setPickerRef = useRefstore((state) => state.setPickerRef);
   return (
     <>
       <mesh
         ref={(el) => {
           if (el) {
-            setPicker(el);
+            setPickerRef(el);
           }
         }}
         position={[-6, 0, 0]}

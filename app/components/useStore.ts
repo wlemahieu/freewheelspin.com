@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
 
-const DEV_HITBOXES = false;
+const DEV_HITBOXES = false; // Set to true to enable hitboxes for debugging
 const names = shuffleArray([
   "Alice",
   "Bob",
@@ -32,11 +32,6 @@ type CameraStore = {
   view3D: () => void;
 };
 
-type PickerStore = {
-  picker: THREE.Mesh | null;
-  setPicker: (picker: THREE.Mesh | null) => void;
-};
-
 type SpinnerStore = {
   currentName: string;
   selectedName: string;
@@ -46,9 +41,19 @@ type SpinnerStore = {
   setNames: (names: string[]) => void;
   spinCompleted: boolean;
   setSpinCompleted: () => void;
+  spinWheel: () => void;
+  spinVelocity: number;
+  setSpinVelocity: (spinVelocity: number) => void;
   isSpinning: boolean;
   setSpinning: () => void;
   visibleHitboxes: boolean;
+};
+
+type RefStore = {
+  pickerRef: THREE.Mesh | null;
+  setPickerRef: (pickerRef: THREE.Mesh) => void;
+  segmentRefs: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[];
+  setSegmentRefs: (segmentRefs: RefStore["segmentRefs"]) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -78,11 +83,6 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
   },
 }));
 
-export const usePicker = create<PickerStore>((set) => ({
-  picker: null,
-  setPicker: (picker: THREE.Mesh | null) => set({ picker }),
-}));
-
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
   selectedName: "",
@@ -91,6 +91,11 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   names,
   setNames: (names: string[]) => set({ names }),
   isSpinning: false,
+  spinVelocity: 0,
+  spinWheel: () => {
+    return set({ isSpinning: true, spinVelocity: 0.2 });
+  },
+  setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
   setSpinCompleted: () => {
     const selectedName = get().currentName;
     return set({ spinCompleted: true, isSpinning: false, selectedName });
@@ -101,4 +106,13 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   spinCompleted: false,
   visibleHitboxes: DEV_HITBOXES,
+}));
+
+export const useRefstore = create<RefStore>((set) => ({
+  pickerRef: null,
+  setPickerRef: (pickerRef: THREE.Mesh) => set({ pickerRef }),
+  segmentRefs: [],
+  setSegmentRefs: (
+    segmentRefs: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[]
+  ) => set({ segmentRefs }),
 }));
