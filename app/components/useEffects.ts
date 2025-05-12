@@ -4,6 +4,12 @@ import { useAppStore, usePickerStore, useSpinnerStore } from "./useStore";
 import * as THREE from "three";
 import ding from "../assets/ding.m4a";
 
+const TEN_SECOND_SPIN = 0.000375;
+const FIVE_SECOND_SPIN = TEN_SECOND_SPIN * 2;
+
+const RANDOMIZED_DECELERATION_SALT = Math.random() * 0.0001;
+const RATE_OF_DECELERATION = FIVE_SECOND_SPIN - RANDOMIZED_DECELERATION_SALT;
+
 export function useAnimateSpinningWheel() {
   const { isSpinning, setSpinCompleted, spinVelocity, setSpinVelocity } =
     useSpinnerStore();
@@ -15,10 +21,7 @@ export function useAnimateSpinningWheel() {
       if (spinVelocity > 0) {
         spinnerRef.rotation.y += spinVelocity;
         // Gradually reduce velocity with randomness
-        const newVelocity = Math.max(
-          spinVelocity - 0.0003 - Math.random() * 0.0001,
-          0
-        );
+        const newVelocity = Math.max(spinVelocity - RATE_OF_DECELERATION, 0);
         setSpinVelocity(newVelocity);
       } else if (isSpinning) {
         setSpinCompleted();
@@ -33,13 +36,10 @@ export function useGetCurrentSlice() {
   const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
   const setCurrentName = useSpinnerStore((s) => s.setCurrentName);
 
-  const pickerRef = usePickerStore.getState().pickerRef;
-  const raycaster = usePickerStore.getState().raycaster;
-  const rayDirection = usePickerStore.getState().rayDirection;
-  const pickerPosition = usePickerStore.getState().pickerPosition;
-  const segmentRefs = usePickerStore.getState().segmentRefs;
-  const currentName = useSpinnerStore.getState().currentName;
-  const isSpinning = useSpinnerStore.getState().isSpinning;
+  const { pickerRef, raycaster, rayDirection, pickerPosition, segmentRefs } =
+    usePickerStore.getState();
+
+  const { currentName, isSpinning } = useSpinnerStore.getState();
 
   // set the current name, for audio or dev hitbox troubleshooting
   useFrame(() => {
@@ -84,11 +84,8 @@ export function useSelectWinner() {
   const setSelectedName = useSpinnerStore((s) => s.setSelectedName);
   const spinCompleted = useSpinnerStore((s) => s.spinCompleted);
 
-  const pickerRef = usePickerStore.getState().pickerRef;
-  const raycaster = usePickerStore.getState().raycaster;
-  const rayDirection = usePickerStore.getState().rayDirection;
-  const pickerPosition = usePickerStore.getState().pickerPosition;
-  const segmentRefs = usePickerStore.getState().segmentRefs;
+  const { pickerRef, raycaster, rayDirection, pickerPosition, segmentRefs } =
+    usePickerStore.getState();
 
   // set the selected name when the spin is completed
   useEffect(() => {
