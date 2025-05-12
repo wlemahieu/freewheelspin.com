@@ -57,6 +57,7 @@ export default function SegmentSlice({
         position={[textX, 0.6, textZ]}
         rotation={[-Math.PI / 2, 0, -textAngle]}
         fontSize={0.6}
+        fontWeight={"bold"}
         color={"white"}
         anchorX="center"
         anchorY="middle"

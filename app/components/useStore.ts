@@ -55,16 +55,22 @@ type SpinnerStore = {
   names: string[];
   setNames: (names: string[]) => void;
   graduallyReduceWheelSpeed: () => void;
+  randomizeSpinPower: boolean;
+  setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
   spinCompleted: boolean;
   setSpinCompleted: () => void;
   spinWheel: () => void;
   spinnerRef: THREE.Group | null;
   spinVelocity: number;
+  spinDuration: number;
+  spinStartTime: number | null;
   setSpinVelocity: (spinVelocity: number) => void;
   isSpinning: boolean;
   setSpinning: () => void;
   visibleHitboxes: boolean;
   reset: () => void;
+  spinPower: number;
+  setSpinPower: (spinPower: number) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -109,11 +115,9 @@ export const usePickerStore = create<PickerStore>((set) => ({
   segmentRefs: [],
 }));
 
-const TEN_SECOND_SPIN = 0.000375;
-const FIVE_SECOND_SPIN = TEN_SECOND_SPIN * 2;
-
-const RANDOMIZED_DECELERATION_SALT = Math.random() * 0.0001;
-const RATE_OF_DECELERATION = FIVE_SECOND_SPIN - RANDOMIZED_DECELERATION_SALT;
+// TODO: Improve these variable names and logic.
+const DECEL_RATE_1 = 0.0006; // higher means decelerate faster
+const DECEL_RATE_2 = 0.0001;
 
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
@@ -129,7 +133,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     if (spinnerRef) {
       if (spinVelocity > 0) {
         spinnerRef.rotation.y += spinVelocity;
-        // Gradually reduce velocity with randomness
+        const RATE_OF_DECELERATION = DECEL_RATE_1 - DECEL_RATE_2;
         const newVelocity = Math.max(spinVelocity - RATE_OF_DECELERATION, 0);
         setSpinVelocity(newVelocity);
       } else if (isSpinning) {
@@ -138,16 +142,35 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     }
   },
   isSpinning: false,
+  randomizeSpinPower: true,
+  setRandomizeSpinPower: (randomizeSpinPower: boolean) =>
+    set({ randomizeSpinPower }),
   spinVelocity: 0,
+  spinDuration: 0,
+  spinStartTime: null,
   spinWheel: () => {
     const previousWinner = get().selectedName;
+    const randomizeSpinPower = get().randomizeSpinPower;
+    const spinPower = get().spinPower;
     const names = get().names.filter((name) => name !== previousWinner);
     if (!names.length) {
       return get().reset();
     }
+    // spin velocity is best when kept between 0.1 and 0.3.
+    // based on the spinPower of 1-10, where 10 adds power,
+    // we can set the spin velocity to be between 0.1 and 0.3.
+    const newSpinPower = randomizeSpinPower
+      ? Math.ceil(Math.random() * 10)
+      : spinPower;
+    const spinVelocity = Math.max(0.1, Math.min(0.3, newSpinPower / 10));
+
     return set({
+      spinCompleted: false,
+      spinDuration: 0,
+      spinPower: newSpinPower,
+      spinStartTime: new Date().getTime(),
       isSpinning: true,
-      spinVelocity: 0.2,
+      spinVelocity,
       selectedName: "",
       names,
     });
@@ -156,7 +179,13 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
   setSpinCompleted: () => {
     const selectedName = get().currentName;
-    return set({ spinCompleted: true, isSpinning: false, selectedName });
+    const spinDuration = new Date().getTime() - (get().spinStartTime || 0);
+    return set({
+      spinCompleted: true,
+      isSpinning: false,
+      selectedName,
+      spinDuration,
+    });
   },
   setSpinning: () => {
     return set({ spinCompleted: false, isSpinning: true, selectedName: "" });
@@ -172,5 +201,9 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       currentName: "",
       spinVelocity: 0,
     });
+  },
+  spinPower: 10,
+  setSpinPower: (spinPower: number) => {
+    return set({ spinPower, randomizeSpinPower: false });
   },
 }));

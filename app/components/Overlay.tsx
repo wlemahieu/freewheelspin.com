@@ -1,3 +1,5 @@
+import ResetButton from "./_Overlay/ResetButton";
+import SpinPower from "./_Overlay/SpinPower";
 import { useCameraStore, useSpinnerStore } from "./useStore";
 import { twMerge } from "tailwind-merge";
 
@@ -5,8 +7,9 @@ const clickableClass = "pointer-events-auto cursor-pointer";
 
 export default function Overlay() {
   const { view, view2D, view3D } = useCameraStore();
-  const reset = useSpinnerStore((state) => state.reset);
   const selectedName = useSpinnerStore((state) => state.selectedName);
+  const spinCompleted = useSpinnerStore((state) => state.spinCompleted);
+  const spinDuration = useSpinnerStore((state) => state.spinDuration);
 
   return (
     <div className="absolute top-0 left-0 z-10 h-full w-full pointer-events-none">
@@ -35,17 +38,16 @@ export default function Overlay() {
               >
                 3D
               </button>
-              <button
-                className={twMerge(clickableClass, "hover:text-red-500")}
-                onClick={reset}
-              >
-                Reset wheel
-              </button>
+              <ResetButton />
             </div>
+            <SpinPower />
           </div>
         </div>
         <div className="text-2xl mt-6 font-bold text-center">
-          {selectedName}
+          {selectedName}{" "}
+          {spinCompleted && (
+            <span className="text-sm">{spinDuration / 1000}s</span>
+          )}
         </div>
       </div>
     </div>
