@@ -106,6 +106,9 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   spinWheel: () => {
     const previousWinner = get().selectedName;
     const names = get().names.filter((name) => name !== previousWinner);
+    if (!names.length) {
+      return get().reset();
+    }
     return set({
       isSpinning: true,
       spinVelocity: 0.2,
@@ -125,13 +128,14 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   spinCompleted: false,
   visibleHitboxes: DEV_HITBOXES,
-  reset: () =>
-    set({
+  reset: () => {
+    return set({
       spinCompleted: false,
       isSpinning: false,
       selectedName: "",
       names: names.sort(() => Math.random() - 0.5),
       currentName: "",
       spinVelocity: 0,
-    }),
+    });
+  },
 }));
