@@ -2,6 +2,8 @@ import { create } from "zustand";
 import * as THREE from "three";
 
 const DEV_HITBOXES = false; // Set to true to enable hitboxes for debugging
+
+// DEBUGGING NAME REMOVAL BUG: 10 looks fine, 6 looks fine, 2 looks fine.
 const names = [
   "Alice",
   "Bob",
@@ -53,6 +55,7 @@ type SpinnerStore = {
   isSpinning: boolean;
   setSpinning: () => void;
   visibleHitboxes: boolean;
+  reset: () => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -122,4 +125,13 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   spinCompleted: false,
   visibleHitboxes: DEV_HITBOXES,
+  reset: () =>
+    set({
+      spinCompleted: false,
+      isSpinning: false,
+      selectedName: "",
+      names: names.sort(() => Math.random() - 0.5),
+      currentName: "",
+      spinVelocity: 0,
+    }),
 }));
