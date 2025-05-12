@@ -1,70 +1,55 @@
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useAppStore, usePickerStore, useSpinnerStore } from "./useStore";
 import * as THREE from "three";
 import ding from "../assets/ding.m4a";
 
-const TEN_SECOND_SPIN = 0.000375;
-const FIVE_SECOND_SPIN = TEN_SECOND_SPIN * 2;
-
-const RANDOMIZED_DECELERATION_SALT = Math.random() * 0.0001;
-const RATE_OF_DECELERATION = FIVE_SECOND_SPIN - RANDOMIZED_DECELERATION_SALT;
-
 export function useAnimateSpinningWheel() {
-  const { isSpinning, setSpinCompleted, spinVelocity, setSpinVelocity } =
-    useSpinnerStore();
+  return useFrame(useSpinnerStore.getState().graduallyReduceWheelSpeed);
+}
 
-  let spinnerRef = useSpinnerStore.getState().spinnerRef;
+export function usePickerIntersections() {
+  const pickerRef = usePickerStore((s) => s.pickerRef);
+  const segmentRefs = usePickerStore((s) => s.segmentRefs);
+  const { raycaster, rayDirection, pickerPosition, setIntersections } =
+    usePickerStore.getState();
 
   useFrame(() => {
-    if (spinnerRef) {
-      if (spinVelocity > 0) {
-        spinnerRef.rotation.y += spinVelocity;
-        // Gradually reduce velocity with randomness
-        const newVelocity = Math.max(spinVelocity - RATE_OF_DECELERATION, 0);
-        setSpinVelocity(newVelocity);
-      } else if (isSpinning) {
-        setSpinCompleted();
-      }
-    }
+    if (!pickerRef || !segmentRefs) return;
+    pickerRef.getWorldPosition(pickerPosition);
+    raycaster.set(pickerPosition, rayDirection);
+    setIntersections(
+      raycaster.intersectObjects<
+        THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
+      >(segmentRefs)
+    );
   });
 
   return null;
 }
 
 export function useGetCurrentSlice() {
+  const intersections = usePickerStore((s) => s.intersections);
+  const isSpinning = useSpinnerStore((s) => s.isSpinning);
   const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
   const setCurrentName = useSpinnerStore((s) => s.setCurrentName);
 
-  const { pickerRef, raycaster, rayDirection, pickerPosition, segmentRefs } =
-    usePickerStore.getState();
+  const { currentName } = useSpinnerStore.getState();
+  let segmentRefs = usePickerStore.getState().segmentRefs;
 
-  const { currentName, isSpinning } = useSpinnerStore.getState();
-
-  // set the current name, for audio or dev hitbox troubleshooting
   useFrame(() => {
-    if (!pickerRef || !segmentRefs) return;
-    pickerRef.getWorldPosition(pickerPosition);
-    raycaster.set(pickerPosition, rayDirection);
-    const intersects =
-      raycaster.intersectObjects<
-        THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
-      >(segmentRefs);
-
     if (visibleHitboxes) {
-      // Reset all segments to default color
       segmentRefs.forEach((segment) => {
         segment.material.color.set("white");
       });
 
-      // Highlight intersected segments
-      intersects.forEach((intersect) => {
+      intersections.forEach((intersect) => {
         const segment = intersect.object;
         segment.material.color.set("yellow");
       });
     }
 
-    const firstIntersectedSegment = intersects[0]?.object;
+    const firstIntersectedSegment = intersections[0]?.object;
     if (
       isSpinning &&
       firstIntersectedSegment?.name &&
@@ -81,30 +66,18 @@ export function useGetCurrentSlice() {
 }
 
 export function useSelectWinner() {
+  const intersections = usePickerStore((s) => s.intersections);
   const setSelectedName = useSpinnerStore((s) => s.setSelectedName);
   const spinCompleted = useSpinnerStore((s) => s.spinCompleted);
 
-  const { pickerRef, raycaster, rayDirection, pickerPosition, segmentRefs } =
-    usePickerStore.getState();
-
-  // set the selected name when the spin is completed
   useEffect(() => {
-    if (!pickerRef || !segmentRefs) return;
-    pickerRef.getWorldPosition(pickerPosition);
-    raycaster.set(pickerPosition, rayDirection);
-
-    const intersects =
-      raycaster.intersectObjects<
-        THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
-      >(segmentRefs);
-
-    const firstIntersectedSegment = intersects[0]?.object;
+    const firstIntersectedSegment = intersections[0]?.object;
     if (firstIntersectedSegment) {
       if (spinCompleted) {
         setSelectedName(firstIntersectedSegment.name);
       }
     }
-  }, [spinCompleted]);
+  }, [intersections, spinCompleted]);
 
   return null;
 }

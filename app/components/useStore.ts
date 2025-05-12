@@ -31,6 +31,14 @@ type CameraStore = {
 };
 
 type PickerStore = {
+  intersections: THREE.Intersection<
+    THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
+  >[];
+  setIntersections: (
+    intersections: THREE.Intersection<
+      THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
+    >[]
+  ) => void;
   pickerRef: THREE.Mesh | null;
   pickerPosition: THREE.Vector3;
   raycaster: THREE.Raycaster;
@@ -46,6 +54,7 @@ type SpinnerStore = {
   setCurrentName: (name: string) => void;
   names: string[];
   setNames: (names: string[]) => void;
+  graduallyReduceWheelSpeed: () => void;
   spinCompleted: boolean;
   setSpinCompleted: () => void;
   spinWheel: () => void;
@@ -86,6 +95,12 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 }));
 
 export const usePickerStore = create<PickerStore>((set) => ({
+  intersections: [],
+  setIntersections: (
+    intersections: THREE.Intersection<
+      THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
+    >[]
+  ) => set({ intersections }),
   pickerRef: null,
   pickerPosition: new THREE.Vector3(),
   raycaster: new THREE.Raycaster(),
@@ -94,6 +109,12 @@ export const usePickerStore = create<PickerStore>((set) => ({
   segmentRefs: [],
 }));
 
+const TEN_SECOND_SPIN = 0.000375;
+const FIVE_SECOND_SPIN = TEN_SECOND_SPIN * 2;
+
+const RANDOMIZED_DECELERATION_SALT = Math.random() * 0.0001;
+const RATE_OF_DECELERATION = FIVE_SECOND_SPIN - RANDOMIZED_DECELERATION_SALT;
+
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
   selectedName: "",
@@ -101,6 +122,21 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   setSelectedName: (name: string) => set({ selectedName: name }),
   names,
   setNames: (names: string[]) => set({ names }),
+  graduallyReduceWheelSpeed: () => {
+    let { spinnerRef } = get();
+    const { isSpinning, spinVelocity, setSpinVelocity, setSpinCompleted } =
+      get();
+    if (spinnerRef) {
+      if (spinVelocity > 0) {
+        spinnerRef.rotation.y += spinVelocity;
+        // Gradually reduce velocity with randomness
+        const newVelocity = Math.max(spinVelocity - RATE_OF_DECELERATION, 0);
+        setSpinVelocity(newVelocity);
+      } else if (isSpinning) {
+        setSpinCompleted();
+      }
+    }
+  },
   isSpinning: false,
   spinVelocity: 0,
   spinWheel: () => {
@@ -123,8 +159,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({ spinCompleted: true, isSpinning: false, selectedName });
   },
   setSpinning: () => {
-    set({ spinCompleted: false, isSpinning: true });
-    return set({ selectedName: "" });
+    return set({ spinCompleted: false, isSpinning: true, selectedName: "" });
   },
   spinCompleted: false,
   visibleHitboxes: DEV_HITBOXES,

@@ -3,6 +3,7 @@ import {
   useGetCurrentSlice,
   useSelectWinner,
   useAnimateSpinningWheel,
+  usePickerIntersections,
 } from "./useEffects";
 import SegmentHitbox from "./_Spinner/SegmentHitbox";
 import SegmentSlice from "./_Spinner/SegmentSlice";
@@ -16,6 +17,7 @@ export default function Spinner() {
   useGetCurrentSlice();
   useSelectWinner();
   useAnimateSpinningWheel();
+  usePickerIntersections();
 
   const faceCount = names.length;
 
