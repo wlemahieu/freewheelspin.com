@@ -10,7 +10,7 @@ type Props = {
 
 export default function useSpinner({ spinVelocity, setSpinVelocity }: Props) {
   const spinner = useRef<Mesh>(null);
-  const { isSpinning, setIsSpinning } = useSpinnerStore();
+  const { isSpinning, setSpinCompleted } = useSpinnerStore();
 
   useFrame(() => {
     if (spinner.current) {
@@ -21,7 +21,7 @@ export default function useSpinner({ spinVelocity, setSpinVelocity }: Props) {
           Math.max(prev - 0.0005 - Math.random() * 0.0002, 0)
         );
       } else if (isSpinning) {
-        setIsSpinning(false);
+        setSpinCompleted();
       }
     }
   });

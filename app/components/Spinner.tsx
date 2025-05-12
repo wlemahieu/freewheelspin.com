@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import useSpinner from "./_Spinner/useSpinner";
 import * as THREE from "three";
@@ -16,10 +16,17 @@ const radius = 5;
 
 export default function Spinner({ segmentRefs }: Props) {
   const picker = usePicker((state) => state.picker);
-  const { currentName, names, setCurrentName, visibleHitboxes } =
-    useSpinnerStore();
+  const {
+    currentName,
+    isSpinning,
+    setSpinning,
+    names,
+    setCurrentName,
+    setSelectedName,
+    spinCompleted,
+    visibleHitboxes,
+  } = useSpinnerStore();
   const [spinVelocity, setSpinVelocity] = useState(0);
-  const { isSpinning, setIsSpinning } = useSpinnerStore();
   const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
   const [pickerPosition] = useState(new THREE.Vector3());
   const [raycaster] = useState(new THREE.Raycaster());
@@ -30,21 +37,16 @@ export default function Spinner({ segmentRefs }: Props) {
   const faceCount = names.length;
   const handleClick = () => {
     if (!isSpinning) {
-      setIsSpinning(true);
+      setSpinning();
       setSpinVelocity(0.2);
     }
   };
 
+  // set the current name, for audio or dev hitbox troubleshooting
   useFrame(() => {
     if (!picker || !segmentRefs.current) return;
-
-    // Update picker position
     picker.getWorldPosition(pickerPosition);
-
-    // Set raycaster origin and direction
     raycaster.set(pickerPosition, rayDirection);
-
-    // Perform raycasting
     const intersects = raycaster.intersectObjects<
       THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
     >(segmentRefs.current);
@@ -62,7 +64,6 @@ export default function Spinner({ segmentRefs }: Props) {
       });
     }
 
-    // Find the first intersected segment
     const firstIntersectedSegment = intersects[0]?.object;
     if (firstIntersectedSegment) {
       if (visibleHitboxes) {
@@ -71,6 +72,24 @@ export default function Spinner({ segmentRefs }: Props) {
       setCurrentName(firstIntersectedSegment.name);
     }
   });
+
+  // set the selected name when the spin is completed
+  useEffect(() => {
+    if (!picker || !segmentRefs.current) return;
+    picker.getWorldPosition(pickerPosition);
+    raycaster.set(pickerPosition, rayDirection);
+
+    const intersects = raycaster.intersectObjects<
+      THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
+    >(segmentRefs.current);
+
+    const firstIntersectedSegment = intersects[0]?.object;
+    if (firstIntersectedSegment) {
+      if (spinCompleted) {
+        setSelectedName(firstIntersectedSegment.name);
+      }
+    }
+  }, [spinCompleted]);
 
   return (
     <group ref={spinner}>

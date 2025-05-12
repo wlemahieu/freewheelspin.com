@@ -39,11 +39,15 @@ type PickerStore = {
 
 type SpinnerStore = {
   currentName: string;
+  selectedName: string;
+  setSelectedName: (name: string) => void;
   setCurrentName: (name: string) => void;
   names: string[];
   setNames: (names: string[]) => void;
+  spinCompleted: boolean;
+  setSpinCompleted: () => void;
   isSpinning: boolean;
-  setIsSpinning: (isSpinning: boolean) => void;
+  setSpinning: () => void;
   visibleHitboxes: boolean;
 };
 
@@ -79,12 +83,22 @@ export const usePicker = create<PickerStore>((set) => ({
   setPicker: (picker: THREE.Mesh | null) => set({ picker }),
 }));
 
-export const useSpinnerStore = create<SpinnerStore>((set) => ({
+export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
+  selectedName: "",
   setCurrentName: (name: string) => set({ currentName: name }),
+  setSelectedName: (name: string) => set({ selectedName: name }),
   names,
   setNames: (names: string[]) => set({ names }),
   isSpinning: false,
-  setIsSpinning: (isSpinning: boolean) => set({ isSpinning }),
+  setSpinCompleted: () => {
+    const selectedName = get().currentName;
+    return set({ spinCompleted: true, isSpinning: false, selectedName });
+  },
+  setSpinning: () => {
+    set({ spinCompleted: false, isSpinning: true });
+    return set({ selectedName: "" });
+  },
+  spinCompleted: false,
   visibleHitboxes: DEV_HITBOXES,
 }));
