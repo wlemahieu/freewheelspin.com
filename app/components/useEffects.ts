@@ -30,13 +30,13 @@ export function useAnimateSpinningWheel() {
 }
 
 export function useGetCurrentSlice() {
-  const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
-  const [pickerPosition] = useState(new THREE.Vector3());
-  const [raycaster] = useState(new THREE.Raycaster());
   const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
   const setCurrentName = useSpinnerStore((s) => s.setCurrentName);
 
   const pickerRef = usePickerStore.getState().pickerRef;
+  const raycaster = usePickerStore.getState().raycaster;
+  const rayDirection = usePickerStore.getState().rayDirection;
+  const pickerPosition = usePickerStore.getState().pickerPosition;
   const segmentRefs = usePickerStore.getState().segmentRefs;
   const currentName = useSpinnerStore.getState().currentName;
   const isSpinning = useSpinnerStore.getState().isSpinning;
@@ -81,13 +81,13 @@ export function useGetCurrentSlice() {
 }
 
 export function useSelectWinner() {
-  const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
-  const [pickerPosition] = useState(new THREE.Vector3());
-  const [raycaster] = useState(new THREE.Raycaster());
   const setSelectedName = useSpinnerStore((s) => s.setSelectedName);
   const spinCompleted = useSpinnerStore((s) => s.spinCompleted);
 
   const pickerRef = usePickerStore.getState().pickerRef;
+  const raycaster = usePickerStore.getState().raycaster;
+  const rayDirection = usePickerStore.getState().rayDirection;
+  const pickerPosition = usePickerStore.getState().pickerPosition;
   const segmentRefs = usePickerStore.getState().segmentRefs;
 
   // set the selected name when the spin is completed

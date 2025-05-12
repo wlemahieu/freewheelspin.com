@@ -30,6 +30,9 @@ type CameraStore = {
 
 type PickerStore = {
   pickerRef: THREE.Mesh | null;
+  pickerPosition: THREE.Vector3;
+  raycaster: THREE.Raycaster;
+  rayDirection: THREE.Vector3;
   setPickerRef: (pickerRef: THREE.Mesh) => void;
   segmentRefs: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[];
 };
@@ -81,6 +84,9 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 
 export const usePickerStore = create<PickerStore>((set) => ({
   pickerRef: null,
+  pickerPosition: new THREE.Vector3(),
+  raycaster: new THREE.Raycaster(),
+  rayDirection: new THREE.Vector3(5, 0, 0),
   setPickerRef: (pickerRef: THREE.Mesh) => set({ pickerRef }),
   segmentRefs: [],
 }));
