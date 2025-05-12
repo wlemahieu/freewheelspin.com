@@ -6,7 +6,7 @@
  */
 import * as THREE from "three";
 import { useSpinnerStore } from "../useStore";
-import { useRefstore } from "../useStore";
+import { usePickerStore } from "../useStore";
 
 export default function SegmentHitbox({
   index,
@@ -22,7 +22,7 @@ export default function SegmentHitbox({
   name: string;
 }) {
   const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
-  const { segmentRefs } = useRefstore();
+  const segmentRefs = usePickerStore((s) => s.segmentRefs);
 
   return (
     <mesh

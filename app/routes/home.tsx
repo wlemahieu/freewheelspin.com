@@ -1,5 +1,7 @@
+import Scene from "~/components/Scene";
 import type { Route } from "./+types/home";
-import SceneWrapper from "~/components/SceneWrapper";
+import Overlay from "~/components/Overlay";
+import { useAudio } from "~/components/useAudio";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +11,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <SceneWrapper />;
+  useAudio();
+  return (
+    <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
+      <Overlay />
+      <Scene />
+    </div>
+  );
 }

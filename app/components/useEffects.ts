@@ -1,21 +1,23 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import type { Mesh } from "three";
-import { useRefstore, useSpinnerStore } from "./useStore";
+import { useAppStore, usePickerStore, useSpinnerStore } from "./useStore";
 import * as THREE from "three";
+import clickSound from "../assets/marimba.m4a";
 
-export function useSpinner() {
-  const spinner = useRef<Mesh>(null);
+export function useAnimateSpinningWheel() {
   const { isSpinning, setSpinCompleted, spinVelocity, setSpinVelocity } =
     useSpinnerStore();
 
+  let spinnerRef = useSpinnerStore.getState().spinnerRef;
+
   useFrame(() => {
-    if (spinner.current) {
+    if (spinnerRef) {
       if (spinVelocity > 0) {
-        spinner.current.rotation.y += spinVelocity;
+        spinnerRef.rotation.y += spinVelocity;
         // Gradually reduce velocity with randomness
         const newVelocity = Math.max(
-          spinVelocity - 0.0005 - Math.random() * 0.0002,
+          spinVelocity - 0.0003 - Math.random() * 0.0001,
           0
         );
         setSpinVelocity(newVelocity);
@@ -25,15 +27,19 @@ export function useSpinner() {
     }
   });
 
-  return spinner;
+  return null;
 }
 
-export function usePickerTouchingSlice() {
-  const { pickerRef, segmentRefs } = useRefstore();
+export function useCurrentlySelectedSlice() {
   const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
   const [pickerPosition] = useState(new THREE.Vector3());
   const [raycaster] = useState(new THREE.Raycaster());
-  const { setCurrentName, visibleHitboxes } = useSpinnerStore();
+  const visibleHitboxes = useSpinnerStore((s) => s.visibleHitboxes);
+  const setCurrentName = useSpinnerStore((s) => s.setCurrentName);
+
+  const pickerRef = usePickerStore.getState().pickerRef;
+  const segmentRefs = usePickerStore.getState().segmentRefs;
+  const currentName = useSpinnerStore.getState().currentName;
 
   // set the current name, for audio or dev hitbox troubleshooting
   useFrame(() => {
@@ -59,7 +65,10 @@ export function usePickerTouchingSlice() {
     }
 
     const firstIntersectedSegment = intersects[0]?.object;
-    if (firstIntersectedSegment) {
+    if (
+      firstIntersectedSegment &&
+      firstIntersectedSegment.name !== currentName
+    ) {
       if (visibleHitboxes) {
         firstIntersectedSegment.material.color.set("red");
       }
@@ -71,11 +80,14 @@ export function usePickerTouchingSlice() {
 }
 
 export function useSelectWinner() {
-  const { pickerRef, segmentRefs } = useRefstore();
   const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
   const [pickerPosition] = useState(new THREE.Vector3());
   const [raycaster] = useState(new THREE.Raycaster());
-  const { setSelectedName, spinCompleted } = useSpinnerStore();
+  const setSelectedName = useSpinnerStore((s) => s.setSelectedName);
+  const spinCompleted = useSpinnerStore((s) => s.spinCompleted);
+
+  const pickerRef = usePickerStore.getState().pickerRef;
+  const segmentRefs = usePickerStore.getState().segmentRefs;
 
   // set the selected name when the spin is completed
   useEffect(() => {
@@ -95,6 +107,28 @@ export function useSelectWinner() {
       }
     }
   }, [spinCompleted]);
+
+  return null;
+}
+
+export function usePlayAudioSliceChange() {
+  const userInteracted = useAppStore((s) => s.userInteracted);
+  const currentName = useSpinnerStore((s) => s.currentName);
+
+  useEffect(() => {
+    if (currentName && userInteracted) {
+      const playAudio = async () => {
+        try {
+          const audio = new Audio(clickSound);
+          audio.volume = 0.25;
+          await audio.play();
+        } catch (error) {
+          console.error("Audio playback failed:", error);
+        }
+      };
+      playAudio();
+    }
+  }, [currentName, userInteracted]);
 
   return null;
 }

@@ -1,7 +1,7 @@
-import { useRefstore } from "../useStore";
+import { usePickerStore } from "./useStore";
 
 export default function Picker() {
-  const setPickerRef = useRefstore((state) => state.setPickerRef);
+  const setPickerRef = usePickerStore((state) => state.setPickerRef);
   return (
     <>
       <mesh

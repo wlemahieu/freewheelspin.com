@@ -2,7 +2,7 @@ import { create } from "zustand";
 import * as THREE from "three";
 
 const DEV_HITBOXES = false; // Set to true to enable hitboxes for debugging
-const names = shuffleArray([
+const names = [
   "Alice",
   "Bob",
   "Charlie",
@@ -13,11 +13,7 @@ const names = shuffleArray([
   "Hank",
   "Ivy",
   "Jack",
-]);
-
-function shuffleArray(array: string[]) {
-  return array.sort(() => Math.random() - 0.5);
-}
+].sort(() => Math.random() - 0.5);
 
 type AppStore = {
   userInteracted: boolean;
@@ -32,6 +28,12 @@ type CameraStore = {
   view3D: () => void;
 };
 
+type PickerStore = {
+  pickerRef: THREE.Mesh | null;
+  setPickerRef: (pickerRef: THREE.Mesh) => void;
+  segmentRefs: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[];
+};
+
 type SpinnerStore = {
   currentName: string;
   selectedName: string;
@@ -42,18 +44,12 @@ type SpinnerStore = {
   spinCompleted: boolean;
   setSpinCompleted: () => void;
   spinWheel: () => void;
+  spinnerRef: THREE.Group | null;
   spinVelocity: number;
   setSpinVelocity: (spinVelocity: number) => void;
   isSpinning: boolean;
   setSpinning: () => void;
   visibleHitboxes: boolean;
-};
-
-type RefStore = {
-  pickerRef: THREE.Mesh | null;
-  setPickerRef: (pickerRef: THREE.Mesh) => void;
-  segmentRefs: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[];
-  setSegmentRefs: (segmentRefs: RefStore["segmentRefs"]) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -83,6 +79,12 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
   },
 }));
 
+export const usePickerStore = create<PickerStore>((set) => ({
+  pickerRef: null,
+  setPickerRef: (pickerRef: THREE.Mesh) => set({ pickerRef }),
+  segmentRefs: [],
+}));
+
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
   selectedName: "",
@@ -93,8 +95,16 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   isSpinning: false,
   spinVelocity: 0,
   spinWheel: () => {
-    return set({ isSpinning: true, spinVelocity: 0.2 });
+    const previousWinner = get().selectedName;
+    const names = get().names.filter((name) => name !== previousWinner);
+    return set({
+      isSpinning: true,
+      spinVelocity: 0.2,
+      selectedName: "",
+      names,
+    });
   },
+  spinnerRef: null,
   setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
   setSpinCompleted: () => {
     const selectedName = get().currentName;
@@ -106,13 +116,4 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   spinCompleted: false,
   visibleHitboxes: DEV_HITBOXES,
-}));
-
-export const useRefstore = create<RefStore>((set) => ({
-  pickerRef: null,
-  setPickerRef: (pickerRef: THREE.Mesh) => set({ pickerRef }),
-  segmentRefs: [],
-  setSegmentRefs: (
-    segmentRefs: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[]
-  ) => set({ segmentRefs }),
 }));
