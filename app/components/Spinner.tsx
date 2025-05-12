@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import {
-  useCurrentlySelectedSlice,
+  useGetCurrentSlice,
   useSelectWinner,
   useAnimateSpinningWheel,
 } from "./useEffects";
@@ -13,7 +13,7 @@ const radius = 5;
 
 export default function Spinner() {
   const names = useSpinnerStore((s) => s.names);
-  useCurrentlySelectedSlice();
+  useGetCurrentSlice();
   useSelectWinner();
   useAnimateSpinningWheel();
 

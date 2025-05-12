@@ -1,9 +1,8 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
-import type { Mesh } from "three";
 import { useAppStore, usePickerStore, useSpinnerStore } from "./useStore";
 import * as THREE from "three";
-import clickSound from "../assets/marimba.m4a";
+import ding from "../assets/ding.m4a";
 
 export function useAnimateSpinningWheel() {
   const { isSpinning, setSpinCompleted, spinVelocity, setSpinVelocity } =
@@ -30,7 +29,7 @@ export function useAnimateSpinningWheel() {
   return null;
 }
 
-export function useCurrentlySelectedSlice() {
+export function useGetCurrentSlice() {
   const [rayDirection] = useState(new THREE.Vector3(5, 0, 0));
   const [pickerPosition] = useState(new THREE.Vector3());
   const [raycaster] = useState(new THREE.Raycaster());
@@ -40,6 +39,7 @@ export function useCurrentlySelectedSlice() {
   const pickerRef = usePickerStore.getState().pickerRef;
   const segmentRefs = usePickerStore.getState().segmentRefs;
   const currentName = useSpinnerStore.getState().currentName;
+  const isSpinning = useSpinnerStore.getState().isSpinning;
 
   // set the current name, for audio or dev hitbox troubleshooting
   useFrame(() => {
@@ -66,7 +66,8 @@ export function useCurrentlySelectedSlice() {
 
     const firstIntersectedSegment = intersects[0]?.object;
     if (
-      firstIntersectedSegment &&
+      isSpinning &&
+      firstIntersectedSegment?.name &&
       firstIntersectedSegment.name !== currentName
     ) {
       if (visibleHitboxes) {
@@ -112,21 +113,23 @@ export function useSelectWinner() {
 }
 
 export function usePlayAudioSliceChange() {
+  const dingSound = useRef<HTMLAudioElement | null>(null);
   const userInteracted = useAppStore((s) => s.userInteracted);
   const currentName = useSpinnerStore((s) => s.currentName);
 
   useEffect(() => {
+    dingSound.current = new Audio(ding);
+    dingSound.current.loop = false;
+    dingSound.current.volume = 0.25;
+  }, []);
+
+  useEffect(() => {
     if (currentName && userInteracted) {
-      const playAudio = async () => {
-        try {
-          const audio = new Audio(clickSound);
-          audio.volume = 0.25;
-          await audio.play();
-        } catch (error) {
-          console.error("Audio playback failed:", error);
-        }
-      };
-      playAudio();
+      if (dingSound.current) {
+        dingSound.current.pause();
+        dingSound.current.currentTime = 0;
+        dingSound.current?.play();
+      }
     }
   }, [currentName, userInteracted]);
 
