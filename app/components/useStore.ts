@@ -4,7 +4,7 @@ import * as THREE from "three";
 const DEV_HITBOXES = false; // Set to true to enable hitboxes for debugging
 
 // DEBUGGING NAME REMOVAL BUG: 10 looks fine, 6 looks fine, 2 looks fine.
-const names = [
+const originalNames = [
   "Alice",
   "Bob",
   "Charlie",
@@ -15,7 +15,11 @@ const names = [
   "Hank",
   "Ivy",
   "Jack",
-].sort(() => Math.random() - 0.5);
+];
+
+function shuffleArray(array: string[]) {
+  return array.sort(() => Math.random() - 0.5);
+}
 
 type AppStore = {
   userInteracted: boolean;
@@ -115,25 +119,27 @@ export const usePickerStore = create<PickerStore>((set) => ({
   segmentRefs: [],
 }));
 
-// TODO: Improve these variable names and logic.
-const DECEL_RATE_1 = 0.0006; // higher means decelerate faster
-const DECEL_RATE_2 = 0.0001;
+const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
 
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
   selectedName: "",
   setCurrentName: (name: string) => set({ currentName: name }),
   setSelectedName: (name: string) => set({ selectedName: name }),
-  names,
+  names: shuffleArray([...originalNames]),
   setNames: (names: string[]) => set({ names }),
   graduallyReduceWheelSpeed: () => {
     let { spinnerRef } = get();
-    const { isSpinning, spinVelocity, setSpinVelocity, setSpinCompleted } =
-      get();
+    const {
+      isSpinning,
+      spinPower,
+      spinVelocity,
+      setSpinVelocity,
+      setSpinCompleted,
+    } = get();
     if (spinnerRef) {
       if (spinVelocity > 0) {
         spinnerRef.rotation.y += spinVelocity;
-        const RATE_OF_DECELERATION = DECEL_RATE_1 - DECEL_RATE_2;
         const newVelocity = Math.max(spinVelocity - RATE_OF_DECELERATION, 0);
         setSpinVelocity(newVelocity);
       } else if (isSpinning) {
@@ -151,23 +157,33 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   spinWheel: () => {
     const previousWinner = get().selectedName;
     const randomizeSpinPower = get().randomizeSpinPower;
-    const spinPower = get().spinPower;
     const names = get().names.filter((name) => name !== previousWinner);
     if (!names.length) {
       return get().reset();
     }
-    // spin velocity is best when kept between 0.1 and 0.3.
-    // based on the spinPower of 1-10, where 10 adds power,
-    // we can set the spin velocity to be between 0.1 and 0.3.
-    const newSpinPower = randomizeSpinPower
+
+    const spinPower = randomizeSpinPower
       ? Math.ceil(Math.random() * 10)
-      : spinPower;
-    const spinVelocity = Math.max(0.1, Math.min(0.3, newSpinPower / 10));
+      : get().spinPower;
+
+    /**
+     * Spin velocity should stay within a minimum and maximum range.
+     * Anything less than the minimum leaves the wheel open to exploitation / easier predictability.
+     * Anything more than the maximum is too fast and makes the wheel spinning UX less enjoyable.
+     *
+     * Since spinPower is a simple 1-10, so we can easily use it as a percentage multipier to determine the spin
+     * velocity within the specified range.
+     */
+    const bottomRange = 0.1;
+    const topRange = 0.375;
+
+    const spinVelocity =
+      bottomRange + (spinPower / 10) * (topRange - bottomRange);
 
     return set({
       spinCompleted: false,
       spinDuration: 0,
-      spinPower: newSpinPower,
+      spinPower,
       spinStartTime: new Date().getTime(),
       isSpinning: true,
       spinVelocity,
@@ -197,7 +213,8 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       spinCompleted: false,
       isSpinning: false,
       selectedName: "",
-      names: names.sort(() => Math.random() - 0.5),
+      names: shuffleArray([...originalNames]),
+      // names: names.sort(() => Math.random() - 0.5),
       currentName: "",
       spinVelocity: 0,
     });
