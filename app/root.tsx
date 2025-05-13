@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { useEffect, useState } from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -43,7 +44,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const [isCompatibleBrowser, setIsCompatibleBrowser] = useState(false);
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsCompatibleBrowser(
+      userAgent.includes("chrome") || userAgent.includes("firefox")
+    );
+  }, []);
+
+  return (
+    <div className="relative w-full h-full">
+      {!isCompatibleBrowser && (
+        <div className="absolute bottom-2 left-3 text-white z-50">
+          <span className="inline-flex flex-col gap-y-1">
+            <span className="text-sm font-bold italic text-yellow-500 opacity-50">
+              Unsupported Browser: Performance will be degraded...
+            </span>
+            <span className="text-sm font-bold italic text-yellow-red opacity-50">
+              Please use Chrome or Firefox for the best experience!
+            </span>
+          </span>
+        </div>
+      )}
+      <Outlet />
+    </div>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

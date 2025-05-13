@@ -11,7 +11,7 @@ export default function RandomizeCheckbox() {
   );
 
   return (
-    <>
+    <span className="flex items-center gap-x-1">
       <label className="text-sm">randomize:</label>
       <input
         type="checkbox"
@@ -30,6 +30,6 @@ export default function RandomizeCheckbox() {
         aria-disabled={isSpinning ? "true" : "false"}
         role="checkbox"
       />
-    </>
+    </span>
   );
 }
