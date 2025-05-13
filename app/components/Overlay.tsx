@@ -24,7 +24,7 @@ export default function Overlay() {
         </div>
         <SelectedSlice />
       </div>
-      <div className="absolute bottom-4 right-4 pointer-events-auto flex gap-x-2 bg-white p-2 rounded-lg">
+      <div className="absolute bottom-4 right-4 pointer-events-auto flex gap-x-2 bg-gray-200 opacity-90 p-2 rounded-lg">
         <Link
           to="https://github.com/wlemahieu/freewheelspin.com"
           target="_blank"
