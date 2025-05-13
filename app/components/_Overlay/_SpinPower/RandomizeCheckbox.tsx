@@ -6,14 +6,12 @@ export default function RandomizeCheckbox() {
   const randomizeSpinPower = useSpinnerStore(
     (state) => state.randomizeSpinPower
   );
-  const spinPower = useSpinnerStore((state) => state.spinPower);
   const setRandomizeSpinPower = useSpinnerStore(
     (state) => state.setRandomizeSpinPower
   );
 
   return (
     <>
-      <span className="font-bold">{spinPower}</span>
       <label className="text-sm">randomize:</label>
       <input
         type="checkbox"

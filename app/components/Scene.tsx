@@ -15,6 +15,7 @@ export default function Scene() {
   return (
     <Canvas
       camera={{ position: [0, 15, 10], fov: 60 }}
+      frameloop="demand" // Only render when needed
       onCreated={(state) => {
         state.gl.setClearColor("#000000");
         setCamera(state.camera as THREE.OrthographicCamera);

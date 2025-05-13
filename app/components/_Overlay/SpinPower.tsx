@@ -20,11 +20,12 @@ export default function SpinPower() {
         step="1"
         value={spinPower}
         onChange={(e) => {
-          const value = parseFloat(e.target.value);
+          const value = Number(e.target.value);
           setSpinPower(value);
         }}
         disabled={isSpinning}
       />
+      <span className="font-bold">{spinPower}</span>
       <RandomizeCheckbox />
     </div>
   );
