@@ -1,5 +1,4 @@
 import { Text } from "@react-three/drei";
-import * as THREE from "three";
 
 type Props = {
   deterministicColor: string;

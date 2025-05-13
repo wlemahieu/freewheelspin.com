@@ -6,7 +6,10 @@ import { useAudio } from "~/components/useAudio";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "FreeWheelSpin.com" },
-    { name: "description", content: "Spin a wheel" },
+    {
+      name: "description",
+      content: "Spin a wheel with your family, friends or colleagues!",
+    },
   ];
 }
 

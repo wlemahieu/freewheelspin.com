@@ -3,6 +3,7 @@ import { usePickerStore, useSpinnerStore } from "./useStore";
 export default function Picker() {
   const visibleHitboxes = useSpinnerStore((state) => state.visibleHitboxes);
   const setPickerRef = usePickerStore((state) => state.setPickerRef);
+
   return (
     <>
       <mesh

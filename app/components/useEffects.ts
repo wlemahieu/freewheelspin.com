@@ -14,8 +14,13 @@ export function usePickerIntersections() {
   const { raycaster, rayDirection, pickerPosition, setIntersections } =
     usePickerStore.getState();
 
-  useFrame(() => {
+  let lastTime = 0;
+
+  useFrame((state) => {
     if (!pickerRef || !segmentRefs) return;
+    const now = state.clock.elapsedTime;
+    if (now - lastTime < 1 / 30) return; // limit to ~30 FPS
+    lastTime = now;
     pickerRef.getWorldPosition(pickerPosition);
     raycaster.set(pickerPosition, rayDirection);
     setIntersections(
@@ -37,7 +42,13 @@ export function useGetCurrentSlice() {
   const { currentName } = useSpinnerStore.getState();
   let segmentRefs = usePickerStore.getState().segmentRefs;
 
-  useFrame(() => {
+  let lastTime = 0;
+
+  useFrame((state) => {
+    const now = state.clock.elapsedTime;
+    if (now - lastTime < 1 / 30) return; // limit to ~30 FPS
+    lastTime = now;
+
     if (visibleHitboxes) {
       segmentRefs.forEach((segment) => {
         segment.material.color.set("white");
