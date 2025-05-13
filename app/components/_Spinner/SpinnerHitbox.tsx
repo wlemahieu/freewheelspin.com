@@ -3,8 +3,11 @@ import { useSpinnerStore } from "../useStore";
 import { useCursor } from "@react-three/drei";
 
 export default function SpinnerHitbox() {
-  const { isSpinning, spinWheel } = useSpinnerStore();
+  const isSpinning = useSpinnerStore((s) => s.isSpinning);
   const [hovered, setHovered] = useState(false);
+
+  const spinWheel = useSpinnerStore.getState().spinWheel;
+
   useCursor(!isSpinning && hovered, "pointer", "auto", document.body);
   useCursor(isSpinning && hovered, "not-allowed", "auto", document.body);
 
@@ -15,7 +18,7 @@ export default function SpinnerHitbox() {
       onPointerOut={() => setHovered(false)}
       visible={false}
     >
-      <boxGeometry args={[10, 3, 10]} />
+      <boxGeometry args={[2, 2, 2]} />
     </mesh>
   );
 }
