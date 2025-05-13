@@ -14,7 +14,8 @@ export default function Scene() {
 
   return (
     <Canvas
-      camera={{ position: [0, 15, 10], fov: 60 }}
+      camera={{ position: [0, 3, 2], fov: 60 }}
+      dpr={[1, 1.5]}
       frameloop="demand" // Only render when needed
       onCreated={(state) => {
         state.gl.setClearColor("#000000");
@@ -23,7 +24,7 @@ export default function Scene() {
     >
       <directionalLight
         color="white"
-        position={[-10, 15, 0]}
+        position={[-2, 3, 0]}
         intensity={2}
         scale={1}
       />
@@ -34,8 +35,8 @@ export default function Scene() {
         enablePan={false}
         enableRotate={view === "3D"}
         enableZoom={true}
-        minDistance={10}
-        maxDistance={15}
+        minDistance={2}
+        maxDistance={3}
       />
       <Picker />
       <Spinner />

@@ -38,13 +38,12 @@ export default function SegmentSlice({
         ior={1.5}
         envMapIntensity={1}
         opacity={0.8}
-        side={THREE.DoubleSide}
       />
       <cylinderGeometry
         args={[
           radius,
           radius,
-          1,
+          0.1,
           32,
           1,
           false,
@@ -54,9 +53,9 @@ export default function SegmentSlice({
       />
       <Text
         key={`text-${index}`}
-        position={[textX, 0.6, textZ]}
+        position={[textX, 0.1, textZ]}
         rotation={[-Math.PI / 2, 0, -textAngle]}
-        fontSize={0.6}
+        fontSize={0.12}
         fontWeight={"bold"}
         color={"white"}
         anchorX="center"

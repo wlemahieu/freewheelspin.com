@@ -1,6 +1,7 @@
-import { usePickerStore } from "./useStore";
+import { usePickerStore, useSpinnerStore } from "./useStore";
 
 export default function Picker() {
+  const visibleHitboxes = useSpinnerStore((state) => state.visibleHitboxes);
   const setPickerRef = usePickerStore((state) => state.setPickerRef);
   return (
     <>
@@ -10,14 +11,15 @@ export default function Picker() {
             setPickerRef(el);
           }
         }}
-        position={[-6, 0, 0]}
+        position={[-1.15, 0.1, 0]}
         rotation={[0, 0, Math.PI / 2]}
-        visible={false}
+        visible={visibleHitboxes}
       >
-        <boxGeometry args={[1, 2, 0.1]} />
+        <boxGeometry args={[0.0125, 0.4, 0.0125]} />
+        {visibleHitboxes && <meshBasicMaterial color={"red"} />}
       </mesh>
-      <mesh position={[-6, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <boxGeometry args={[1, 2, 0.1]} />
+      <mesh position={[-1.15, 0.1, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <boxGeometry args={[0.0125, 0.4, 0.0125]} />
         <meshPhongMaterial />
       </mesh>
     </>

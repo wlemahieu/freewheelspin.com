@@ -38,8 +38,8 @@ export default function SegmentHitbox({
       rotation={[-Math.PI / 2, 0, -textAngle]}
       visible={visibleHitboxes}
     >
-      <boxGeometry args={[1, 3.2]} />
-      <meshStandardMaterial side={THREE.DoubleSide} />
+      <boxGeometry args={[0.2, 0.5]} />
+      <meshStandardMaterial />
     </mesh>
   );
 }

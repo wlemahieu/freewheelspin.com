@@ -10,7 +10,7 @@ import SegmentSlice from "./_Spinner/SegmentSlice";
 import { useSpinnerStore } from "./useStore";
 import SpinnerHitbox from "./_Spinner/SpinnerHitbox";
 
-const radius = 5;
+const radius = 1;
 
 export default function Spinner() {
   const names = useSpinnerStore((s) => s.names);
