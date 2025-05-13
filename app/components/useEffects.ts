@@ -9,6 +9,7 @@ export function useAnimateSpinningWheel() {
 }
 
 export function usePickerIntersections() {
+  const intersections = usePickerStore((s) => s.intersections);
   const pickerRef = usePickerStore((s) => s.pickerRef);
   const segmentRefs = usePickerStore((s) => s.segmentRefs);
   const { raycaster, rayDirection, pickerPosition, setIntersections } =
@@ -23,11 +24,22 @@ export function usePickerIntersections() {
     lastTime = now;
     pickerRef.getWorldPosition(pickerPosition);
     raycaster.set(pickerPosition, rayDirection);
-    setIntersections(
+    const newIntersections =
       raycaster.intersectObjects<
         THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
-      >(segmentRefs)
-    );
+      >(segmentRefs);
+
+    /* set intersections only if they've changed. if the scene
+     is not moving, useFrame should not be setting intersections every
+     frame, but rather if it detects the two intersection arrays are different. */
+    if (
+      intersections.length !== newIntersections.length ||
+      intersections.some((intersect, index) => {
+        return intersect.object.uuid !== newIntersections[index].object.uuid;
+      })
+    ) {
+      setIntersections(newIntersections);
+    }
   });
 
   return null;
