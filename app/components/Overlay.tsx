@@ -1,12 +1,14 @@
+import { Link } from "react-router";
 import ResetButton from "./_Overlay/ResetButton";
 import SelectedSlice from "./_Overlay/SelectedSlice";
 import SpinPower from "./_Overlay/SpinPower";
 import ViewButtons from "./_Overlay/ViewButtons";
+import githubLogo from "../assets/github.svg";
 
 export default function Overlay() {
   return (
     <div className="absolute top-0 left-0 z-10 h-full w-full pointer-events-none">
-      <div className="relative text-white p-2 ">
+      <div className="text-white p-2 ">
         <div className="flex items-center justify-center">
           <div className="pointer-events-auto flex flex-col gap-y-2 justify-between">
             <div className="text-center">
@@ -21,6 +23,13 @@ export default function Overlay() {
         </div>
         <SelectedSlice />
       </div>
+      <Link
+        to="https://github.com/wlemahieu/freewheelspin.com"
+        target="_blank"
+        className="absolute bottom-4 right-4 pointer-events-auto"
+      >
+        <img src={githubLogo} className="w-8 h-8" />
+      </Link>
     </div>
   );
 }

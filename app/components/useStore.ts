@@ -130,13 +130,8 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   setNames: (names: string[]) => set({ names }),
   graduallyReduceWheelSpeed: () => {
     let { spinnerRef } = get();
-    const {
-      isSpinning,
-      spinPower,
-      spinVelocity,
-      setSpinVelocity,
-      setSpinCompleted,
-    } = get();
+    const { isSpinning, spinVelocity, setSpinVelocity, setSpinCompleted } =
+      get();
     if (spinnerRef) {
       if (spinVelocity > 0) {
         spinnerRef.rotation.y += spinVelocity;
@@ -155,6 +150,10 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   spinDuration: 0,
   spinStartTime: null,
   spinWheel: () => {
+    const isSpinning = get().isSpinning;
+    if (isSpinning) {
+      return;
+    }
     const previousWinner = get().selectedName;
     const randomizeSpinPower = get().randomizeSpinPower;
     const names = get().names.filter((name) => name !== previousWinner);
@@ -214,7 +213,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       isSpinning: false,
       selectedName: "",
       names: shuffleArray([...originalNames]),
-      // names: names.sort(() => Math.random() - 0.5),
       currentName: "",
       spinVelocity: 0,
     });
