@@ -43,7 +43,7 @@ export default function SegmentSlice({
           radius,
           radius,
           0.1,
-          32,
+          64,
           1,
           false,
           cylinderThetaStart,

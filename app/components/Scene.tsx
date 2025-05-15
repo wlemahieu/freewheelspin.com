@@ -21,6 +21,7 @@ export default function Scene() {
         setCamera(state.camera as THREE.OrthographicCamera);
       }}
     >
+      <axesHelper args={[5]} />
       <directionalLight
         color="white"
         position={[-2, 3, 0]}
@@ -28,8 +29,8 @@ export default function Scene() {
         scale={1}
       />
       <OrbitControls
-        autoRotate={!isSpinning}
-        //autoRotate={false}
+        //autoRotate={!isSpinning}
+        autoRotate={false}
         maxPolarAngle={Math.PI / 3} // Prevent going under the wheel
         enablePan={false}
         enableRotate={view === "3D"}

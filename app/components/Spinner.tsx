@@ -1,25 +1,13 @@
-import { Fragment } from "react";
-import {
-  useGetCurrentSlice,
-  useSelectWinner,
-  useAnimateSpinningWheel,
-  usePickerIntersections,
-} from "./useEffects";
-import SegmentHitbox from "./_Spinner/SegmentHitbox";
+import { useAnimateSpinningWheel, useSelectedName } from "./useEffects";
 import SegmentSlice from "./_Spinner/SegmentSlice";
 import { useSpinnerStore } from "./useStore";
 import SpinnerHitbox from "./_Spinner/SpinnerHitbox";
 
-const radius = 1;
-
 export default function Spinner() {
-  const names = useSpinnerStore((s) => s.names);
-  useGetCurrentSlice();
-  useSelectWinner();
   useAnimateSpinningWheel();
-  usePickerIntersections();
-
-  const faceCount = names.length;
+  useSelectedName();
+  const slices = useSpinnerStore((s) => s.slices);
+  const sliceRadius = useSpinnerStore((s) => s.sliceRadius);
 
   return (
     <group
@@ -28,42 +16,30 @@ export default function Spinner() {
       }}
     >
       <SpinnerHitbox />
-      {names.map((name: string, index: number) => {
-        const cylinderThetaStart = (index / faceCount) * Math.PI * 2;
-        const cylinderThetaLength = (1 / faceCount) * Math.PI * 2;
-        const textThetaStart = (index / faceCount) * Math.PI * 2;
-        const textThetaLength = (1 / faceCount) * Math.PI * 2;
-        const textAngle = textThetaStart + textThetaLength;
-        //console.log("", { name, textAngle, textThetaStart, textThetaLength });
-        const textX = Math.cos(textAngle) * (radius * 0.6);
-        const textZ = Math.sin(textAngle) * (radius * 0.6);
-        const hitBoxX = Math.cos(textAngle) * (radius * 0.9);
-        const hitBoxZ = Math.sin(textAngle) * (radius * 0.9);
-        const deterministicColor = `hsl(${
-          (index / faceCount) * 360
-        }, 100%, 50%)`;
+      {slices.map((slice, index) => {
+        const {
+          name,
+          cylinderThetaStart,
+          cylinderThetaLength,
+          textAngle,
+          textX,
+          textZ,
+          deterministicColor,
+        } = slice;
 
         return (
-          <Fragment key={name}>
-            <SegmentHitbox
-              index={index}
-              hitBoxX={hitBoxX}
-              hitBoxZ={hitBoxZ}
-              textAngle={textAngle}
-              name={name}
-            />
-            <SegmentSlice
-              deterministicColor={deterministicColor}
-              index={index}
-              name={name}
-              radius={radius}
-              cylinderThetaStart={cylinderThetaStart}
-              cylinderThetaLength={cylinderThetaLength}
-              textX={textX}
-              textZ={textZ}
-              textAngle={textAngle}
-            />
-          </Fragment>
+          <SegmentSlice
+            key={name}
+            index={index}
+            name={name}
+            deterministicColor={deterministicColor}
+            cylinderThetaStart={cylinderThetaStart}
+            cylinderThetaLength={cylinderThetaLength}
+            radius={sliceRadius}
+            textX={textX}
+            textZ={textZ}
+            textAngle={textAngle}
+          />
         );
       })}
     </group>
