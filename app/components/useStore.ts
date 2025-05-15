@@ -50,7 +50,6 @@ type SpinnerStore = {
   setNames: (names: string[]) => void;
   sliceRadius: number;
   slices: Slice[];
-  setSlices: (slices: Slice[]) => void;
   reduceWheelSpeed: () => void;
   randomizeSpinPower: boolean;
   setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
@@ -212,9 +211,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 
     const previousWinner = get().winnerName;
     const names = get().names.filter((name) => name !== previousWinner);
-    const slices = get().slices.filter(
-      (slice) => slice.name !== previousWinner
-    );
+    const slices = generateSliceGeometry(names, radius);
     if (previousWinner) {
       const obj = scene.getObjectByName(previousWinner);
       if (obj) {
@@ -273,6 +270,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   winnerName: "",
   elevateSelectedSlice: () => {
+    return;
     const { slices, currentName } = get();
     slices.forEach((slice) => {
       if (!slice.sliceRef) return;
