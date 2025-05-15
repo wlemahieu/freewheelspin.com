@@ -64,8 +64,6 @@ export default function SegmentSlice({
         fontSize={0.12}
         fontWeight={"bold"}
         color={"white"}
-        anchorX="center"
-        anchorY="middle"
       >
         {name}
       </Text>

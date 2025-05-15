@@ -101,11 +101,15 @@ const names = shuffleArray([...originalNames]);
 const radius = 1;
 
 function generateSliceGeometry(names: string[], radius: number): Slice[] {
+  const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
+  const evenNumber = names.length % 2 === 0;
+
   return names.map((name: string, index: number) => {
     const cylinderThetaStart = (index / names.length) * Math.PI * 2;
-    const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
     const textAngle =
-      cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
+      cylinderThetaStart +
+      cylinderThetaLength / (evenNumber ? 2 : 1) -
+      Math.PI / 2;
     const textX = Math.cos(textAngle) * (radius - 0.4);
     const textZ = Math.sin(textAngle) * (radius - 0.4);
     const deterministicColor = `hsl(${
