@@ -2,6 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { useAppStore, useSpinnerStore } from "./useStore";
 import ding from "../assets/ding.m4a";
+import * as THREE from "three";
 
 export function useAnimateSpinningWheel() {
   return useFrame(useSpinnerStore.getState().reduceWheelSpeed);
@@ -9,6 +10,14 @@ export function useAnimateSpinningWheel() {
 
 export function useSelectedName() {
   return useFrame(useSpinnerStore.getState().calculateSelectedName);
+}
+
+export function useElevateSelectedSlice() {
+  return useFrame((s) =>
+    useSpinnerStore
+      .getState()
+      .elevateSelectedSlice(s.camera as THREE.OrthographicCamera)
+  );
 }
 
 export function usePlayAudioSliceChange() {

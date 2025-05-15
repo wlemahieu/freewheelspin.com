@@ -8,7 +8,7 @@ export default function Spinner() {
   useSelectedName();
   const slices = useSpinnerStore((s) => s.slices);
   const sliceRadius = useSpinnerStore((s) => s.sliceRadius);
-
+  console.log("", { slices });
   return (
     <group
       ref={(el) => {

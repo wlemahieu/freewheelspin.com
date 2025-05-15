@@ -18,36 +18,6 @@ function shuffleArray(array: string[]) {
   return array.sort(() => Math.random() - 0.5);
 }
 
-function getWinningSliceIndex(rotationY: number, slices: Slice[]): number {
-  const TWO_PI = Math.PI * 2;
-
-  // Normalize rotation and invert because the spinning wheel rotates, not the picker
-  const pointerTheta = ((rotationY % TWO_PI) + TWO_PI) % TWO_PI;
-
-  // Find the slice that contains the pointerTheta
-  const EPSILON = 1e-6;
-  for (let i = 0; i < slices.length; i++) {
-    const { cylinderThetaStart, cylinderThetaLength } = slices[i];
-    const cylinderThetaEnd =
-      (cylinderThetaStart + cylinderThetaLength) % TWO_PI;
-
-    // Check if pointerTheta falls within the slice's range
-    if (
-      (cylinderThetaStart <= pointerTheta + EPSILON &&
-        pointerTheta < cylinderThetaEnd + EPSILON) ||
-      (cylinderThetaEnd < cylinderThetaStart && // Handle wrap-around case
-        (pointerTheta >= cylinderThetaStart - EPSILON ||
-          pointerTheta < cylinderThetaEnd + EPSILON))
-    ) {
-      return i;
-    }
-  }
-
-  // Fallback in case no slice is found (shouldn't happen if slices are defined correctly)
-  console.error("No matching slice found for pointerTheta:", pointerTheta);
-  return -1;
-}
-
 type Slice = {
   name: string;
   cylinderThetaStart: number;
@@ -56,6 +26,7 @@ type Slice = {
   textX: number;
   textZ: number;
   deterministicColor: string;
+  sliceRef: THREE.Mesh | null;
 };
 
 type AppStore = {
@@ -73,10 +44,8 @@ type CameraStore = {
 
 type SpinnerStore = {
   currentName: string;
-  selectedName: string;
-  setSelectedName: (name: string) => void;
-  calculateSelectedName: () => void;
   setCurrentName: (name: string) => void;
+  calculateSelectedName: () => void;
   names: string[];
   setNames: (names: string[]) => void;
   sliceRadius: number;
@@ -85,9 +54,7 @@ type SpinnerStore = {
   reduceWheelSpeed: () => void;
   randomizeSpinPower: boolean;
   setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
-  spinCompleted: boolean;
-  setSpinCompleted: () => void;
-  spinWheel: () => void;
+  spinWheel: (scene: any) => void;
   spinnerRef: THREE.Group | null;
   spinVelocity: number;
   spinDuration: number;
@@ -99,6 +66,7 @@ type SpinnerStore = {
   spinPower: number;
   setSpinPower: (spinPower: number) => void;
   winnerName: string;
+  elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -132,21 +100,15 @@ const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
 
 const names = shuffleArray([...originalNames]);
 const radius = 1;
-export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
-  currentName: "",
-  selectedName: "",
-  setCurrentName: (name: string) => set({ currentName: name }),
-  setSelectedName: (name: string) => set({ winnerName: name }),
-  names,
-  setNames: (names: string[]) => set({ names }),
-  sliceRadius: 1,
-  slices: names.map((name: string, index: number) => {
+
+function generateSliceGeometry(names: string[], radius: number): Slice[] {
+  return names.map((name: string, index: number) => {
     const cylinderThetaStart = (index / names.length) * Math.PI * 2;
     const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
     const textAngle =
       cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
-    const textX = Math.cos(textAngle) * (radius + 0.2);
-    const textZ = Math.sin(textAngle) * (radius + 0.2);
+    const textX = Math.cos(textAngle) * (radius - 0.4);
+    const textZ = Math.sin(textAngle) * (radius - 0.4);
     const deterministicColor = `hsl(${
       (index / names.length) * 360
     }, 100%, 50%)`;
@@ -159,20 +121,34 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       textX,
       textZ,
       deterministicColor,
+      sliceRef: null,
     };
-  }),
+  });
+}
+
+export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
+  currentName: "",
+  setCurrentName: (name: string) => set({ currentName: name }),
+  names,
+  setNames: (names: string[]) => set({ names }),
+  sliceRadius: 1,
+  slices: generateSliceGeometry(names, radius),
   setSlices: (slices: Slice[]) => set({ slices }),
   reduceWheelSpeed: () => {
     let { spinnerRef } = get();
-    const { isSpinning, spinVelocity, setSpinVelocity, setSpinCompleted } =
-      get();
-    if (spinnerRef) {
+    const { isSpinning, spinVelocity } = get();
+    if (spinnerRef && isSpinning) {
       if (spinVelocity > 0) {
         spinnerRef.rotation.y += spinVelocity;
-        const newVelocity = Math.max(spinVelocity - RATE_OF_DECELERATION, 0);
-        setSpinVelocity(newVelocity);
-      } else if (isSpinning) {
-        setSpinCompleted();
+        set({ spinVelocity: Math.max(spinVelocity - RATE_OF_DECELERATION, 0) });
+      } else {
+        const winnerName = get().currentName;
+        const spinDuration = new Date().getTime() - (get().spinStartTime || 0);
+        return set({
+          isSpinning: false,
+          spinDuration,
+          winnerName,
+        });
       }
     }
   },
@@ -213,7 +189,12 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 
     if (selectedSlice) {
       const { name } = selectedSlice;
-      set({ selectedName: name });
+      set({ currentName: name });
+      // if (selectedSlice.sliceRef) {
+      //   if (selectedSlice.sliceRef.position.y == 0) {
+      //     selectedSlice.sliceRef.position.y = 0.2;
+      //   }
+      // }
     }
   },
   isSpinning: false,
@@ -223,7 +204,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   spinVelocity: 0,
   spinDuration: 0,
   spinStartTime: null,
-  spinWheel: () => {
+  spinWheel: (scene) => {
     const isSpinning = get().isSpinning;
     if (isSpinning) {
       return;
@@ -231,18 +212,26 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 
     const previousWinner = get().winnerName;
     const names = get().names.filter((name) => name !== previousWinner);
+    const slices = get().slices.filter(
+      (slice) => slice.name !== previousWinner
+    );
+    if (previousWinner) {
+      const obj = scene.getObjectByName(previousWinner);
+      if (obj) {
+        if (obj.geometry?.dispose) {
+          obj.geometry.dispose();
+        }
+        if (obj.material?.dispose) {
+          obj.material.dispose();
+        }
+        scene.remove(obj);
+      }
+    }
+
     if (!names.length) {
       return get().reset();
     }
 
-    /**
-     * Spin velocity should stay within a minimum and maximum range.
-     * Anything less than the minimum leaves the wheel open to exploitation / easier predictability.
-     * Anything more than the maximum is too fast and makes the wheel spinning UX less enjoyable.
-     *
-     * Since spinPower is a simple 1-10, so we can easily use it as a percentage multipier to determine the spin
-     * velocity within the specified range.
-     */
     const bottomRange = 0.1;
     const topRange = 0.375;
     const randomizeSpinPower = get().randomizeSpinPower;
@@ -253,7 +242,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       bottomRange + (spinPower / 10) * (topRange - bottomRange);
 
     return set({
-      spinCompleted: false,
       spinDuration: 0,
       spinPower,
       spinStartTime: new Date().getTime(),
@@ -261,31 +249,20 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       spinVelocity,
       winnerName: "",
       names,
+      slices,
     });
   },
   spinnerRef: null,
   setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
-  setSpinCompleted: () => {
-    const winnerName = get().selectedName;
-    const spinDuration = new Date().getTime() - (get().spinStartTime || 0);
-
-    return set({
-      spinCompleted: true,
-      isSpinning: false,
-      spinDuration,
-      winnerName,
-    });
-  },
   setSpinning: () => {
-    return set({ spinCompleted: false, isSpinning: true, winnerName: "" });
+    return set({ isSpinning: true, winnerName: "" });
   },
-  spinCompleted: false,
   reset: () => {
     return set({
-      spinCompleted: false,
       isSpinning: false,
       winnerName: "",
       names: shuffleArray([...originalNames]),
+      slices: generateSliceGeometry(originalNames, radius),
       currentName: "",
       spinVelocity: 0,
     });
@@ -295,4 +272,17 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({ spinPower, randomizeSpinPower: false });
   },
   winnerName: "",
+  elevateSelectedSlice: () => {
+    const { slices, currentName } = get();
+    slices.forEach((slice) => {
+      if (!slice.sliceRef) return;
+      if (slice.name === currentName) {
+        if (slice.sliceRef.position.y == 0) {
+          slice.sliceRef.position.y = 0.2;
+        }
+      } else {
+        slice.sliceRef.position.y = 0;
+      }
+    });
+  },
 }));

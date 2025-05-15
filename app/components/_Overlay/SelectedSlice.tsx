@@ -1,11 +1,10 @@
 import { useSpinnerStore } from "../useStore";
 
 export default function SelectedSlice() {
-  const spinCompleted = useSpinnerStore((state) => state.spinCompleted);
   //const spinDuration = useSpinnerStore((state) => state.spinDuration);
   const winnerName = useSpinnerStore((state) => state.winnerName);
 
-  if (!spinCompleted) {
+  if (!winnerName) {
     return null;
   }
 

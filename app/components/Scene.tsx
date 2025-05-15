@@ -21,7 +21,7 @@ export default function Scene() {
         setCamera(state.camera as THREE.OrthographicCamera);
       }}
     >
-      <axesHelper args={[5]} />
+      {/* <axesHelper args={[5]} /> */}
       <directionalLight
         color="white"
         position={[-2, 3, 0]}

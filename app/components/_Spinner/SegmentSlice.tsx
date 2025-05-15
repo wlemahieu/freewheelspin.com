@@ -1,4 +1,5 @@
 import { Text } from "@react-three/drei";
+import { useSpinnerStore } from "../useStore";
 
 type Props = {
   deterministicColor: string;
@@ -24,8 +25,14 @@ export default function SegmentSlice({
   textAngle,
 }: Props) {
   return (
-    <mesh raycast={() => null}>
-      {/* <meshPhongMaterial color={deterministicColor} side={THREE.DoubleSide} /> */}
+    <mesh
+      name={name}
+      ref={(el) => {
+        if (el) {
+          useSpinnerStore.getState().slices[index].sliceRef = el as any;
+        }
+      }}
+    >
       <meshPhysicalMaterial
         color={deterministicColor}
         clearcoat={1}
