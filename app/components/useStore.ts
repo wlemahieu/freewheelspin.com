@@ -156,8 +156,9 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     }
   },
   calculateSelectedName: () => {
-    const { spinnerRef, slices } = get();
+    const { currentName, spinnerRef, slices, names } = get();
     if (!spinnerRef) return;
+    if (names.length === 1) return set({ currentName: names[0] });
     /*
     Given the current spinnerRef rotation (velocity),
     look at all slices and given each slice's cylinderThetaStart and cylinderThetaLength,
@@ -190,7 +191,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       );
     });
 
-    if (selectedSlice) {
+    if (selectedSlice && selectedSlice.name !== currentName) {
       const { name } = selectedSlice;
       set({ currentName: name });
       // if (selectedSlice.sliceRef) {
@@ -215,7 +216,10 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 
     const previousWinner = get().winnerName;
     const names = get().names.filter((name) => name !== previousWinner);
-    const slices = generateSliceGeometry(names, radius);
+    if (!names.length) {
+      return get().reset();
+    }
+
     if (previousWinner) {
       const obj = scene.getObjectByName(previousWinner);
       if (obj) {
@@ -229,10 +233,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       }
     }
 
-    if (!names.length) {
-      return get().reset();
-    }
-
     const bottomRange = 0.1;
     const topRange = 0.375;
     const randomizeSpinPower = get().randomizeSpinPower;
@@ -241,6 +241,8 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       : get().spinPower;
     const spinVelocity =
       bottomRange + (spinPower / 10) * (topRange - bottomRange);
+
+    const slices = generateSliceGeometry(names, radius);
 
     return set({
       spinDuration: 0,
@@ -259,6 +261,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({ isSpinning: true, winnerName: "" });
   },
   reset: () => {
+    console.log("reset", {});
     return set({
       isSpinning: false,
       winnerName: "",
