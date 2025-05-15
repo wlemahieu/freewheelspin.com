@@ -29,8 +29,8 @@ export default function Scene() {
         scale={1}
       />
       <OrbitControls
-        //autoRotate={!isSpinning}
-        autoRotate={false}
+        autoRotate={!isSpinning}
+        //autoRotate={false}
         maxPolarAngle={Math.PI / 3} // Prevent going under the wheel
         enablePan={false}
         enableRotate={view === "3D"}
