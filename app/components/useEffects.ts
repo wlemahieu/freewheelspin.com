@@ -23,6 +23,7 @@ export function useElevateSelectedSlice() {
 export function usePlayAudioSliceChange() {
   const userInteracted = useAppStore((s) => s.userInteracted);
   const currentName = useSpinnerStore((s) => s.currentName);
+  const isSpinning = useSpinnerStore((s) => s.isSpinning);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
@@ -59,7 +60,7 @@ export function usePlayAudioSliceChange() {
 
   // Play on name change
   useEffect(() => {
-    if (!canPlay || !userInteracted || !currentName) return;
+    if (!canPlay || !userInteracted || !currentName || !isSpinning) return;
 
     const context = audioContextRef.current;
     const buffer = bufferRef.current;
@@ -70,7 +71,7 @@ export function usePlayAudioSliceChange() {
       source.connect(context.destination);
       source.start(0);
     }
-  }, [currentName, userInteracted, canPlay]);
+  }, [currentName, userInteracted, canPlay, isSpinning]);
 
   return null;
 }
