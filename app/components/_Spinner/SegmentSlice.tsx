@@ -1,29 +1,22 @@
 import { Text } from "@react-three/drei";
-import { useSpinnerStore } from "../useStore";
+import { useSpinnerStore, type Slice } from "../useStore";
 
 type Props = {
-  deterministicColor: string;
   index: number;
-  name: string;
-  radius: number;
-  cylinderThetaStart: number;
-  cylinderThetaLength: number;
-  textX: number;
-  textZ: number;
-  textAngle: number;
+  slice: Slice;
 };
 
-export default function SegmentSlice({
-  deterministicColor,
-  index,
-  name,
-  radius,
-  cylinderThetaStart,
-  cylinderThetaLength,
-  textX,
-  textZ,
-  textAngle,
-}: Props) {
+export default function SegmentSlice({ index, slice }: Props) {
+  const radius = useSpinnerStore((s) => s.sliceRadius);
+  const {
+    name,
+    deterministicColor,
+    cylinderThetaStart,
+    cylinderThetaLength,
+    textX,
+    textZ,
+    textAngle,
+  } = slice;
   return (
     <mesh
       name={name}
@@ -60,7 +53,7 @@ export default function SegmentSlice({
       <Text
         key={`text-${index}`}
         position={[textX, 0.1, textZ]}
-        rotation={[-Math.PI / 2, 0, -textAngle]}
+        rotation={[-Math.PI / 2, 0, textAngle]}
         fontSize={0.12}
         fontWeight={"bold"}
         color={"white"}
