@@ -15,10 +15,11 @@ const originalNames = [
 ];
 
 function shuffleArray(array: string[]) {
+  return array;
   return array.sort(() => Math.random() - 0.5);
 }
 
-type Slice = {
+export type Slice = {
   name: string;
   cylinderThetaStart: number;
   cylinderThetaLength: number;
@@ -96,22 +97,18 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 }));
 
 const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
-
 const names = shuffleArray([...originalNames]);
 const radius = 1;
 
 function generateSliceGeometry(names: string[], radius: number): Slice[] {
   const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
-  const evenNumber = names.length % 2 === 0;
 
   return names.map((name: string, index: number) => {
     const cylinderThetaStart = (index / names.length) * Math.PI * 2;
     const textAngle =
-      cylinderThetaStart +
-      cylinderThetaLength / (evenNumber ? 2 : 1) -
-      Math.PI / 2;
-    const textX = Math.cos(textAngle) * (radius - 0.4);
-    const textZ = Math.sin(textAngle) * (radius - 0.4);
+      cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
+    const textX = Math.cos(-textAngle) * (radius - 0.4);
+    const textZ = Math.sin(-textAngle) * (radius - 0.4);
     const deterministicColor = `hsl(${
       (index / names.length) * 360
     }, 100%, 50%)`;
@@ -175,13 +172,15 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     The picker is at (x, y, z) = (-1.15, 0.1, 0) and the wheel is at (x, y, z) = (0, 0, 0).
     */
     const EPSILON = 1e-6;
-    const pointerTheta = spinnerRef.rotation.y - Math.PI / 2;
+    const pointerTheta = -spinnerRef.rotation.y - Math.PI / 2;
     const TWO_PI = Math.PI * 2;
     const normalizedPointerTheta = ((pointerTheta % TWO_PI) + TWO_PI) % TWO_PI;
+
     const selectedSlice = slices.find((slice) => {
       const { cylinderThetaStart, cylinderThetaLength } = slice;
       const cylinderThetaEnd =
         (cylinderThetaStart + cylinderThetaLength) % TWO_PI;
+
       return (
         (cylinderThetaStart <= normalizedPointerTheta + EPSILON &&
           normalizedPointerTheta < cylinderThetaEnd + EPSILON) ||
@@ -194,11 +193,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     if (selectedSlice && selectedSlice.name !== currentName) {
       const { name } = selectedSlice;
       set({ currentName: name });
-      // if (selectedSlice.sliceRef) {
-      //   if (selectedSlice.sliceRef.position.y == 0) {
-      //     selectedSlice.sliceRef.position.y = 0.2;
-      //   }
-      // }
     }
   },
   isSpinning: false,
@@ -277,7 +271,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   winnerName: "",
   elevateSelectedSlice: () => {
-    return;
     const { slices, currentName } = get();
     slices.forEach((slice) => {
       if (!slice.sliceRef) return;
