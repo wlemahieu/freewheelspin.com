@@ -92,7 +92,14 @@ export function usePlayAudioSliceChange() {
     if (context && buffer) {
       const source = context.createBufferSource();
       source.buffer = buffer;
-      source.connect(context.destination);
+
+      // Create a gain node to control volume
+      const gainNode = context.createGain();
+      gainNode.gain.value = 0.05; // Set volume (0.0 - 1.0)
+
+      source.connect(gainNode);
+      gainNode.connect(context.destination);
+
       source.start(0);
     }
   }, [currentName, userInteracted, canPlay, isSpinning]);
