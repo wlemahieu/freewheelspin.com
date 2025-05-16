@@ -5,6 +5,7 @@ import { useThree } from "@react-three/fiber";
 
 export default function SpinnerHitbox() {
   const isSpinning = useSpinnerStore((s) => s.isSpinning);
+  const sliceRadius = useSpinnerStore((s) => s.sliceRadius);
   const { scene } = useThree();
   const [hovered, setHovered] = useState(false);
 
@@ -20,7 +21,7 @@ export default function SpinnerHitbox() {
       onPointerOut={() => setHovered(false)}
       visible={false}
     >
-      <boxGeometry args={[2, 2, 2]} />
+      <cylinderGeometry args={[sliceRadius, sliceRadius, 0.1, 64, 1, false]} />
     </mesh>
   );
 }
