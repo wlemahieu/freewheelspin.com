@@ -7,13 +7,23 @@ const ORIGINAL_NAMES = [
   "Alice",
   "Bob",
   "Charlie",
-  "Diana",
+  "David",
   "Eve",
   "Frank",
   "Grace",
-  "Hank",
-  "Ivy",
-  "Jack",
+  "Heidi",
+  "Ivan",
+  "Judy",
+  "Kevin",
+  "Liam",
+  "Mia",
+  "Nina",
+  "Oscar",
+  "Paul",
+  "Quinn",
+  "Rita",
+  "Sam",
+  "Tina",
 ];
 const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
 const SHUFFLED_NAMES = shuffleArray([...ORIGINAL_NAMES]);
@@ -67,6 +77,9 @@ type SpinnerStore = {
   setSpinPower: (spinPower: number) => void;
   winnerName: string;
   elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
+  showEditModal: boolean;
+  setShowEditModal: (showEditModal: boolean) => void;
+  edit: (names: string[]) => void;
 };
 
 function shuffleArray(array: string[]) {
@@ -283,4 +296,8 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       }
     });
   },
+  showEditModal: false,
+  setShowEditModal: (showEditModal: boolean) => set({ showEditModal }),
+  edit: (names: string[]) =>
+    set({ names, slices: generateSliceGeometry(names, SLICE_CYLINDER_RADIUS) }),
 }));

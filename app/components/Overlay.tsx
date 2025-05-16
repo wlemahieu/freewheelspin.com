@@ -5,6 +5,7 @@ import SpinPower from "./_Overlay/SpinPower";
 import ViewButtons from "./_Overlay/ViewButtons";
 import githubLogo from "../assets/github.svg";
 import trelloLogo from "../assets/trello.svg";
+import EditWheel from "./_Overlay/EditWheel";
 
 export default function Overlay() {
   return (
@@ -13,11 +14,14 @@ export default function Overlay() {
         <div className="flex items-center justify-center">
           <div className="pointer-events-auto flex flex-col gap-y-2 justify-between">
             <div className="text-center">
-              <span className="text-3xl">FreeWheelSpin.com</span>
+              <a className="text-3xl" href="/">
+                FreeWheelSpin.com
+              </a>
             </div>
             <div className="flex gap-x-2 justify-center">
               <ViewButtons />
               <ResetButton />
+              <EditWheel />
             </div>
             <SpinPower />
           </div>
