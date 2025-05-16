@@ -28,7 +28,6 @@ const ORIGINAL_NAMES = [
   "Tina",
 ];
 const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
-const SHUFFLED_NAMES = shuffleArray([...ORIGINAL_NAMES]);
 export const SLICE_CYLINDER_RADIUS = 1;
 
 export type Slice = {
@@ -165,7 +164,7 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
-  slices: generateSliceGeometry(SHUFFLED_NAMES),
+  slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
   reduceWheelSpeed: () => {
     let { spinnerRef } = get();
     const { isSpinning, spinVelocity } = get();
@@ -290,7 +289,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({
       isSpinning: false,
       winnerName: "",
-      slices: generateSliceGeometry(ORIGINAL_NAMES),
+      slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
       currentName: "",
       spinVelocity: 0,
     });
