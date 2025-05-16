@@ -8,7 +8,7 @@ export function meta({}: Route.MetaArgs) {
     { title: "FreeWheelSpin.com" },
     {
       name: "description",
-      content: "Spin a wheel with your family, friends or colleagues!",
+      content: "Spin a wheel to see who goes next!",
     },
   ];
 }

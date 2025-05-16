@@ -1,5 +1,6 @@
 import { Text } from "@react-three/drei";
 import { useSpinnerStore, type Slice } from "../useStore";
+import * as THREE from "three";
 
 type Props = {
   index: number;
@@ -31,12 +32,13 @@ export default function SegmentSlice({ index, slice }: Props) {
         clearcoat={1}
         clearcoatRoughness={0.25}
         roughness={0.5}
-        metalness={0.5}
+        metalness={1.25}
         transmission={1}
         thickness={0.1}
         ior={1.5}
         envMapIntensity={1}
-        opacity={0.8}
+        opacity={1}
+        side={THREE.DoubleSide}
       />
       <cylinderGeometry
         args={[
