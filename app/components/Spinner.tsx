@@ -23,7 +23,11 @@ export default function Spinner() {
     >
       <SpinnerHitbox />
       {slices.map((slice, index) => (
-        <SegmentSlice key={slice.name} index={index} slice={slice} />
+        <SegmentSlice
+          key={`slice-${index}-${slice.name}`}
+          index={index}
+          slice={slice}
+        />
       ))}
     </group>
   );
