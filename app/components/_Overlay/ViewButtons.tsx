@@ -1,31 +1,25 @@
-import { twMerge } from "tailwind-merge";
 import { useCameraStore } from "../useStore";
-
-const clickableClass = "pointer-events-auto cursor-pointer";
+import Button from "../Button";
 
 export default function ViewButtons() {
   const { view, view2D, view3D } = useCameraStore();
 
   return (
     <>
-      <button
-        className={twMerge(
-          clickableClass,
-          view === "2D" ? "text-blue-500" : ""
-        )}
+      <Button
+        className={view === "2D" && "text-blue-500"}
         onClick={view2D}
+        title="2-dimensional view"
       >
         2D
-      </button>
-      <button
-        className={twMerge(
-          clickableClass,
-          view === "3D" ? "text-blue-500" : ""
-        )}
+      </Button>
+      <Button
+        className={view === "3D" && "text-blue-500"}
         onClick={view3D}
+        title="3-dimensional view"
       >
         3D
-      </button>
+      </Button>
     </>
   );
 }

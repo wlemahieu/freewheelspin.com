@@ -1,54 +1,29 @@
-import { twMerge } from "tailwind-merge";
+import { useMemo } from "react";
 import { useSpinnerStore } from "../useStore";
-
-const clickableClass = "pointer-events-auto cursor-pointer";
+import Button from "../Button";
 
 export default function EditWheel() {
-  const showEditModal = useSpinnerStore((state) => state.showEditModal);
-  const setShowEditModal = useSpinnerStore((state) => state.setShowEditModal);
   const isSpinning = useSpinnerStore((state) => state.isSpinning);
-  const names = useSpinnerStore((state) => state.slices).map((s) => s.name);
-  const updateSliceText = useSpinnerStore((s) => s.updateSliceText);
+  const setShowEditModal = useSpinnerStore((state) => state.setShowEditModal);
+  const showEditModal = useSpinnerStore((state) => state.showEditModal);
+  const slices = useSpinnerStore((state) => state.slices);
+  const updateSliceText = useSpinnerStore((state) => state.updateSliceText);
+
+  const names = useMemo(() => {
+    return slices.map((slice) => slice.name);
+  }, [slices]);
 
   return (
     <>
-      <button
-        className={twMerge(
-          clickableClass,
-          "hover:text-red-500",
-          isSpinning ? "cursor-not-allowed" : "cursor-pointer"
-        )}
-        onClick={() => setShowEditModal(true)}
+      <Button
         disabled={isSpinning || showEditModal}
+        onClick={() => setShowEditModal(true)}
         title="Edit the wheel"
-        aria-label="Edit the wheel"
-        aria-describedby="edit-wheel"
-        id="edit-wheel"
-        type="button"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            setShowEditModal(true);
-          }
-        }}
-        onMouseEnter={() => {
-          const tooltip = document.getElementById("edit-wheel");
-          if (tooltip) {
-            tooltip.setAttribute("role", "tooltip");
-            tooltip.setAttribute("aria-hidden", "false");
-          }
-        }}
-        onMouseLeave={() => {
-          const tooltip = document.getElementById("edit-wheel");
-          if (tooltip) {
-            tooltip.setAttribute("role", "tooltip");
-            tooltip.setAttribute("aria-hidden", "true");
-          }
-        }}
+        notAllowed={isSpinning || showEditModal}
       >
         Edit
-      </button>
+      </Button>
+
       {showEditModal && (
         <>
           <div

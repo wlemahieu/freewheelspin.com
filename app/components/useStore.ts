@@ -29,7 +29,7 @@ const ORIGINAL_NAMES = [
 ];
 const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
 const SHUFFLED_NAMES = shuffleArray([...ORIGINAL_NAMES]);
-const SLICE_CYLINDER_RADIUS = 1;
+export const SLICE_CYLINDER_RADIUS = 1;
 
 export type Slice = {
   name: string;
@@ -61,6 +61,7 @@ type SpinnerStore = {
   calculateSelectedName: () => void;
   sliceRadius: number;
   slices: Slice[];
+  setSlices: (slices: Slice[]) => void;
   reduceWheelSpeed: () => void;
   randomizeSpinPower: boolean;
   setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
@@ -92,7 +93,10 @@ function shuffleArray(array: string[]) {
   return array.sort(() => Math.random() - 0.5);
 }
 
-function generateSliceGeometry(names: string[], radius: number): Slice[] {
+export function generateSliceGeometry(
+  names: string[],
+  radius: number
+): Slice[] {
   const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
 
   return names.map((name: string, index: number) => {
@@ -331,7 +335,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       .findIndex((name, index) => name !== newNames[index]);
 
     if (changedIndex > -1) {
-      const changedName = newNames[changedIndex].trim();
+      const changedName = newNames[changedIndex]?.trim();
       newNames[changedIndex] = changedName;
     }
 
