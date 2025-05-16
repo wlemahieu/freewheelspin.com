@@ -7,19 +7,8 @@ export default function EditWheel() {
   const showEditModal = useSpinnerStore((state) => state.showEditModal);
   const setShowEditModal = useSpinnerStore((state) => state.setShowEditModal);
   const isSpinning = useSpinnerStore((state) => state.isSpinning);
-  const names = useSpinnerStore((state) => state.names);
-  const slices = useSpinnerStore((state) => state.slices);
-
-  function updateSliceText(
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) {
-    const newNames = [...names];
-    const newSlices = [...slices];
-    newNames[index] = e.target.value;
-    newSlices[index].name = e.target.value;
-    useSpinnerStore.setState({ names: newNames, slices: newSlices });
-  }
+  const names = useSpinnerStore((state) => state.slices).map((s) => s.name);
+  const updateSliceText = useSpinnerStore((s) => s.updateSliceText);
 
   return (
     <>
@@ -74,23 +63,12 @@ export default function EditWheel() {
               Edit Wheel Properties
             </h2>
             <form>
-              {names.map((name, index) => (
-                <div key={index} className="flex items-center gap-x-2">
-                  <label
-                    htmlFor={`name-${index}`}
-                    className="text-gray-700 font-medium"
-                  >
-                    Slice {index + 1}:
-                  </label>
-                  <input
-                    type="text"
-                    id={`name-${index}`}
-                    value={name}
-                    onChange={(e) => updateSliceText(e, index)}
-                    className="border border-gray-300 rounded p-2 text-gray-800"
-                  />
-                </div>
-              ))}
+              <textarea
+                value={names.join("\n")}
+                onChange={(e) => updateSliceText(e.target.value)}
+                className="border border-gray-300 rounded p-2 text-gray-800 w-full min-h-[200px]"
+                placeholder="Enter one name per line"
+              />
             </form>
           </div>
         </>

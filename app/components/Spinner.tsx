@@ -1,7 +1,8 @@
 import {
   useAnimateSpinningWheel,
   useElevateSelectedSlice,
-  useSelectedName,
+  useCalculateSelectedName,
+  useSyncSceneRemovedSlices,
 } from "./useEffects";
 import SegmentSlice from "./_Spinner/SegmentSlice";
 import { useSpinnerStore } from "./useStore";
@@ -9,8 +10,9 @@ import SpinnerHitbox from "./_Spinner/SpinnerHitbox";
 
 export default function Spinner() {
   useAnimateSpinningWheel();
-  useSelectedName();
+  useCalculateSelectedName();
   useElevateSelectedSlice();
+  useSyncSceneRemovedSlices();
   const slices = useSpinnerStore((s) => s.slices);
 
   return (
