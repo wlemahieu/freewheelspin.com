@@ -14,7 +14,7 @@ export default function Scene() {
 
   return (
     <Canvas
-      camera={{ position: [0, 3, 2], fov: 60 }}
+      camera={{ position: [0, 15, 0], fov: 60 }}
       gl={{ powerPreference: "high-performance" }}
       onCreated={(state) => {
         state.gl.setClearColor("#000000");

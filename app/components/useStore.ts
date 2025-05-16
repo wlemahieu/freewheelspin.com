@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import * as THREE from "three";
 
-const originalNames = [
+const DEFAULT_SPIN_POWER = 10;
+const DEFAULT_VIEW = "2D";
+const ORIGINAL_NAMES = [
   "Alice",
   "Bob",
   "Charlie",
@@ -13,11 +15,9 @@ const originalNames = [
   "Ivy",
   "Jack",
 ];
-
-function shuffleArray(array: string[]) {
-  return array;
-  return array.sort(() => Math.random() - 0.5);
-}
+const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
+const SHUFFLED_NAMES = shuffleArray([...ORIGINAL_NAMES]);
+const SLICE_CYLINDER_RADIUS = 1;
 
 export type Slice = {
   name: string;
@@ -69,36 +69,9 @@ type SpinnerStore = {
   elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
 };
 
-export const useAppStore = create<AppStore>((set) => ({
-  userInteracted: false,
-  setUserInteracted: (userInteracted: boolean) => set({ userInteracted }),
-}));
-
-export const useCameraStore = create<CameraStore>((set, get) => ({
-  camera: null,
-  setCamera: (camera: THREE.OrthographicCamera | null) => set({ camera }),
-  view: "3D",
-  view2D: () => {
-    const camera = get().camera;
-    if (!camera) return;
-    camera.position.set(0, 15, 0);
-    camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix();
-    set({ view: "2D" });
-  },
-  view3D: () => {
-    const camera = get().camera;
-    if (!camera) return;
-    camera.position.set(0, 15, 10);
-    camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix();
-    set({ view: "3D" });
-  },
-}));
-
-const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
-const names = shuffleArray([...originalNames]);
-const radius = 1;
+function shuffleArray(array: string[]) {
+  return array.sort(() => Math.random() - 0.5);
+}
 
 function generateSliceGeometry(names: string[], radius: number): Slice[] {
   const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
@@ -126,13 +99,40 @@ function generateSliceGeometry(names: string[], radius: number): Slice[] {
   });
 }
 
+export const useAppStore = create<AppStore>((set) => ({
+  userInteracted: false,
+  setUserInteracted: (userInteracted: boolean) => set({ userInteracted }),
+}));
+
+export const useCameraStore = create<CameraStore>((set, get) => ({
+  camera: null,
+  setCamera: (camera: THREE.OrthographicCamera | null) => set({ camera }),
+  view: DEFAULT_VIEW,
+  view2D: () => {
+    const camera = get().camera;
+    if (!camera) return;
+    camera.position.set(0, 15, 0);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+    set({ view: "2D" });
+  },
+  view3D: () => {
+    const camera = get().camera;
+    if (!camera) return;
+    camera.position.set(0, 15, 10);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+    set({ view: "3D" });
+  },
+}));
+
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
   setCurrentName: (name: string) => set({ currentName: name }),
-  names,
+  names: SHUFFLED_NAMES,
   setNames: (names: string[]) => set({ names }),
   sliceRadius: 1,
-  slices: generateSliceGeometry(names, radius),
+  slices: generateSliceGeometry(SHUFFLED_NAMES, SLICE_CYLINDER_RADIUS),
   setSlices: (slices: Slice[]) => set({ slices }),
   reduceWheelSpeed: () => {
     let { spinnerRef } = get();
@@ -227,6 +227,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       }
     }
 
+    // define some spin power constraints for UX
     const bottomRange = 0.1;
     const topRange = 0.375;
     const randomizeSpinPower = get().randomizeSpinPower;
@@ -236,7 +237,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     const spinVelocity =
       bottomRange + (spinPower / 10) * (topRange - bottomRange);
 
-    const slices = generateSliceGeometry(names, radius);
+    const slices = generateSliceGeometry(names, SLICE_CYLINDER_RADIUS);
 
     return set({
       spinDuration: 0,
@@ -255,17 +256,16 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({ isSpinning: true, winnerName: "" });
   },
   reset: () => {
-    console.log("reset", {});
     return set({
       isSpinning: false,
       winnerName: "",
-      names: shuffleArray([...originalNames]),
-      slices: generateSliceGeometry(originalNames, radius),
+      names: shuffleArray([...ORIGINAL_NAMES]),
+      slices: generateSliceGeometry(ORIGINAL_NAMES, SLICE_CYLINDER_RADIUS),
       currentName: "",
       spinVelocity: 0,
     });
   },
-  spinPower: 10,
+  spinPower: DEFAULT_SPIN_POWER,
   setSpinPower: (spinPower: number) => {
     return set({ spinPower, randomizeSpinPower: false });
   },
@@ -276,7 +276,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       if (!slice.sliceRef) return;
       if (slice.name === currentName) {
         if (slice.sliceRef.position.y == 0) {
-          slice.sliceRef.position.y = 0.2;
+          slice.sliceRef.position.y = 0.1;
         }
       } else {
         slice.sliceRef.position.y = 0;
