@@ -46,14 +46,12 @@ export default function Button({
         const tooltip = document.getElementById(kebabCaseName);
         if (tooltip) {
           tooltip.setAttribute("role", "tooltip");
-          tooltip.setAttribute("aria-hidden", "false");
         }
       }}
       onMouseLeave={() => {
         const tooltip = document.getElementById(kebabCaseName);
         if (tooltip) {
           tooltip.setAttribute("role", "tooltip");
-          tooltip.setAttribute("aria-hidden", "true");
         }
       }}
     >
