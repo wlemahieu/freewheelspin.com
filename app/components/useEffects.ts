@@ -1,6 +1,6 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { use, useEffect, useMemo, useRef, useState } from "react";
-import { useAppStore, useDataStore, useSpinnerStore } from "./useStore";
+import { useEffect, useRef, useState } from "react";
+import { useAppStore, useFirestoreData, useSpinnerStore } from "./useStore";
 import ding from "../assets/ding.m4a";
 import * as THREE from "three";
 import { removeNameFromWheel } from "./useStore";
@@ -110,7 +110,7 @@ export function usePlayAudioSliceChange() {
 }
 
 export function useSubscribeMetricsData() {
-  const { totalSpins: localTotalSpins, setTotalSpins } = useDataStore();
+  const { totalSpins: localTotalSpins, setTotalSpins } = useFirestoreData();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, "dashboard", "metrics"), (doc) => {

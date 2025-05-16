@@ -1,8 +1,13 @@
 import { useSubscribeMetricsData } from "../useEffects";
-import { useDataStore } from "../useStore";
+import { useFirestoreData } from "../useStore";
 
 export default function SpinCounter() {
   useSubscribeMetricsData();
-  const { totalSpins } = useDataStore();
-  return <span>total spins: {totalSpins}</span>;
+  const { totalSpins } = useFirestoreData();
+  return (
+    <span className="text-cyan-400 flex gap-x-1 items-center">
+      <span className="underline bold italic">total spins ever:</span>
+      <span className="text-2xl font-extrabold">{totalSpins}</span>
+    </span>
+  );
 }

@@ -7,6 +7,8 @@ import githubLogo from "../assets/github.svg";
 import trelloLogo from "../assets/trello.svg";
 import EditWheel from "./_Overlay/EditWheel";
 import SpinCounter from "./_Overlay/SpinCounter";
+import RemoveWinners from "./_Overlay/RemoveWinners";
+import CountWins from "./_Overlay/CountWins";
 
 export default function Overlay() {
   return (
@@ -26,11 +28,15 @@ export default function Overlay() {
             </div>
             <div className="flex flex-col gap-y-2 text-center">
               <SpinPower />
-              <SpinCounter />
+              <RemoveWinners />
+              <CountWins />
             </div>
           </div>
         </div>
         <SelectedSlice />
+      </div>
+      <div className="absolute bottom-4 left-4 pointer-events-auto p-2">
+        <SpinCounter />
       </div>
       <div className="absolute bottom-4 right-4 pointer-events-auto flex gap-x-2 bg-gray-200 opacity-90 p-2 rounded-lg">
         <Link

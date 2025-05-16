@@ -39,6 +39,7 @@ export type Slice = {
   textZ: number;
   deterministicColor: string;
   sliceRef: THREE.Mesh | null;
+  wins: number;
 };
 
 type AppStore = {
@@ -85,13 +86,19 @@ type DataStore = {
   setTotalSpins: (totalSpins: number) => void;
 };
 
+type ConfigStore = {
+  removeWinners: boolean;
+  setRemoveWinners: (removeWinners: boolean) => void;
+  countWins: boolean;
+  setCountWins: (countWins: boolean) => void;
+};
+
 function shuffleArray(array: string[]) {
   return array.sort(() => Math.random() - 0.5);
 }
 
 export function generateSliceGeometry(names: string[]): Slice[] {
   const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
-
   return names.map((name: string, index: number) => {
     const cylinderThetaStart = (index / names.length) * Math.PI * 2;
     const textAngle =
@@ -111,6 +118,7 @@ export function generateSliceGeometry(names: string[]): Slice[] {
       textZ,
       deterministicColor,
       sliceRef: null,
+      wins: 0,
     };
   });
 }
@@ -166,7 +174,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
   slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
   reduceWheelSpeed: () => {
-    let { spinnerRef } = get();
+    let { slices, spinnerRef } = get();
     const { isSpinning, spinVelocity } = get();
     if (spinnerRef && isSpinning) {
       if (spinVelocity > 0) {
@@ -175,8 +183,17 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       } else {
         const winnerName = get().currentName;
         const spinDuration = new Date().getTime() - (get().spinStartTime || 0);
+        // increments the winner's wins in zustand store in their slice.
+        const winnerSlice = slices.findIndex(
+          (slice) => slice.name === winnerName
+        );
+        if (winnerSlice > -1) {
+          slices[winnerSlice].wins += 1;
+          //set({ slices });
+        }
         return set({
           isSpinning: false,
+          slices,
           spinDuration,
           winnerName,
         });
@@ -244,15 +261,25 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     if (isSpinning) {
       return;
     }
-    const newSlices = slices.filter(
-      (slice) => slice.name !== previousWinnerName
-    );
-    if (!newSlices.length) {
-      return reset();
-    }
+    const { removeWinners } = useConfigStore.getState();
 
-    if (previousWinnerName) {
-      removeNameFromWheel(scene, previousWinnerName);
+    if (removeWinners) {
+      const newSlices = slices.filter(
+        (slice) => slice.name !== previousWinnerName
+      );
+      if (!newSlices.length) {
+        return reset();
+      }
+
+      if (previousWinnerName) {
+        removeNameFromWheel(scene, previousWinnerName);
+      }
+
+      //TODO: Optimize this so there is only 1 set in this function.
+      const newSlicesFull = generateSliceGeometry(
+        newSlices.map((slice) => slice.name)
+      );
+      set({ slices: newSlicesFull });
     }
 
     incrementTotalSpins();
@@ -266,10 +293,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     const spinVelocity =
       bottomRange + (spinPower / 10) * (topRange - bottomRange);
 
-    const newSlicesFull = generateSliceGeometry(
-      newSlices.map((slice) => slice.name)
-    );
-
     return set({
       spinDuration: 0,
       spinPower,
@@ -277,7 +300,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       isSpinning: true,
       spinVelocity,
       winnerName: "",
-      slices: newSlicesFull,
     });
   },
   spinnerRef: null,
@@ -332,7 +354,14 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
 }));
 
-export const useDataStore = create<DataStore>((set) => ({
+export const useConfigStore = create<ConfigStore>((set) => ({
+  removeWinners: true,
+  setRemoveWinners: (removeWinners: boolean) => set({ removeWinners }),
+  countWins: false,
+  setCountWins: (countWins: boolean) => set({ countWins }),
+}));
+
+export const useFirestoreData = create<DataStore>((set) => ({
   totalSpins: 0,
   setTotalSpins: (totalSpins: number) => set({ totalSpins }),
 }));

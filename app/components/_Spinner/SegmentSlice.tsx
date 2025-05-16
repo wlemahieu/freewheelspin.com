@@ -20,6 +20,7 @@ export default function SegmentSlice({ index, slice }: Props) {
     textX,
     textZ,
     textAngle,
+    wins,
   } = slice;
   return (
     <mesh
@@ -63,7 +64,7 @@ export default function SegmentSlice({ index, slice }: Props) {
         fontWeight={"bold"}
         color={"white"}
       >
-        {name}
+        {name} {wins > 0 ? `(${wins})` : ""}
       </Text>
     </mesh>
   );
