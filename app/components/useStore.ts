@@ -257,6 +257,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       winnerName: previousWinnerName,
       randomizeSpinPower,
       reset,
+      spinnerRef,
     } = get();
     if (isSpinning) {
       return;
@@ -274,7 +275,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       if (previousWinnerName) {
         removeNameFromWheel(scene, previousWinnerName);
       }
-
       //TODO: Optimize this so there is only 1 set in this function.
       const newSlicesFull = generateSliceGeometry(
         newSlices.map((slice) => slice.name)
@@ -292,6 +292,12 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       : get().spinPower;
     const spinVelocity =
       bottomRange + (spinPower / 10) * (topRange - bottomRange);
+
+    // Add a random offset to the wheel's starting rotation
+    if (spinnerRef) {
+      const TWO_PI = Math.PI * 2;
+      spinnerRef.rotation.y = Math.random() * TWO_PI;
+    }
 
     return set({
       spinDuration: 0,
