@@ -3,12 +3,11 @@ import { OrbitControls } from "@react-three/drei";
 import Spinner from "./Spinner";
 import * as THREE from "three";
 import Picker from "./Picker";
-import { useCameraStore, useSpinnerStore } from "./useStore";
+import { useCameraStore } from "./useStore";
 import { usePlayAudioSliceChange } from "./useEffects";
 
 export default function Scene() {
   usePlayAudioSliceChange();
-  const isSpinning = useSpinnerStore((s) => s.isSpinning);
   const view = useCameraStore((s) => s.view);
   const setCamera = useCameraStore((s) => s.setCamera);
 
@@ -29,8 +28,7 @@ export default function Scene() {
         scale={1}
       />
       <OrbitControls
-        autoRotate={!isSpinning}
-        //autoRotate={false}
+        autoRotate={false}
         maxPolarAngle={Math.PI / 3} // Prevent going under the wheel
         enablePan={false}
         enableRotate={view === "3D"}
