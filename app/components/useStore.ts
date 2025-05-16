@@ -57,11 +57,8 @@ type CameraStore = {
 
 type SpinnerStore = {
   currentName: string;
-  setCurrentName: (name: string) => void;
   calculateSelectedName: () => void;
-  sliceRadius: number;
   slices: Slice[];
-  setSlices: (slices: Slice[]) => void;
   reduceWheelSpeed: () => void;
   randomizeSpinPower: boolean;
   setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
@@ -93,18 +90,15 @@ function shuffleArray(array: string[]) {
   return array.sort(() => Math.random() - 0.5);
 }
 
-export function generateSliceGeometry(
-  names: string[],
-  radius: number
-): Slice[] {
+export function generateSliceGeometry(names: string[]): Slice[] {
   const cylinderThetaLength = (1 / names.length) * Math.PI * 2;
 
   return names.map((name: string, index: number) => {
     const cylinderThetaStart = (index / names.length) * Math.PI * 2;
     const textAngle =
       cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
-    const textX = Math.cos(-textAngle) * (radius - 0.4);
-    const textZ = Math.sin(-textAngle) * (radius - 0.4);
+    const textX = Math.cos(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
+    const textZ = Math.sin(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
     const deterministicColor = `hsl(${
       (index / names.length) * 360
     }, 100%, 50%)`;
@@ -171,10 +165,7 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
-  setCurrentName: (name: string) => set({ currentName: name }),
-  sliceRadius: 1,
-  slices: generateSliceGeometry(SHUFFLED_NAMES, SLICE_CYLINDER_RADIUS),
-  setSlices: (slices: Slice[]) => set({ slices }),
+  slices: generateSliceGeometry(SHUFFLED_NAMES),
   reduceWheelSpeed: () => {
     let { spinnerRef } = get();
     const { isSpinning, spinVelocity } = get();
@@ -277,8 +268,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       bottomRange + (spinPower / 10) * (topRange - bottomRange);
 
     const newSlicesFull = generateSliceGeometry(
-      newSlices.map((slice) => slice.name),
-      SLICE_CYLINDER_RADIUS
+      newSlices.map((slice) => slice.name)
     );
 
     return set({
@@ -300,7 +290,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({
       isSpinning: false,
       winnerName: "",
-      slices: generateSliceGeometry(ORIGINAL_NAMES, SLICE_CYLINDER_RADIUS),
+      slices: generateSliceGeometry(ORIGINAL_NAMES),
       currentName: "",
       spinVelocity: 0,
     });
@@ -325,8 +315,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   showEditModal: false,
   setShowEditModal: (showEditModal: boolean) => set({ showEditModal }),
-  edit: (names: string[]) =>
-    set({ slices: generateSliceGeometry(names, SLICE_CYLINDER_RADIUS) }),
+  edit: (names: string[]) => set({ slices: generateSliceGeometry(names) }),
   updateSliceText: (textAreaValue: string) => {
     const { slices } = get();
     const newNames = textAreaValue.split("\n");
@@ -339,7 +328,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       newNames[changedIndex] = changedName;
     }
 
-    const newSlices = generateSliceGeometry(newNames, SLICE_CYLINDER_RADIUS);
+    const newSlices = generateSliceGeometry(newNames);
     return set({ slices: newSlices });
   },
 }));

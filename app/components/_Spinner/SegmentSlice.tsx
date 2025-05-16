@@ -1,5 +1,9 @@
 import { Text } from "@react-three/drei";
-import { useSpinnerStore, type Slice } from "../useStore";
+import {
+  SLICE_CYLINDER_RADIUS,
+  useSpinnerStore,
+  type Slice,
+} from "../useStore";
 import * as THREE from "three";
 
 type Props = {
@@ -8,7 +12,6 @@ type Props = {
 };
 
 export default function SegmentSlice({ index, slice }: Props) {
-  const radius = useSpinnerStore((s) => s.sliceRadius);
   const {
     name,
     deterministicColor,
@@ -42,8 +45,8 @@ export default function SegmentSlice({ index, slice }: Props) {
       />
       <cylinderGeometry
         args={[
-          radius,
-          radius,
+          SLICE_CYLINDER_RADIUS,
+          SLICE_CYLINDER_RADIUS,
           0.1,
           64,
           1,

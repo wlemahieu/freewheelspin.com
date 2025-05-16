@@ -1,8 +1,8 @@
-import { useRealtimeFirestoreData } from "../useEffects";
+import { useSubscribeMetricsData } from "../useEffects";
 import { useDataStore } from "../useStore";
 
 export default function SpinCounter() {
-  useRealtimeFirestoreData();
+  useSubscribeMetricsData();
   const { totalSpins } = useDataStore();
   return <span>total spins: {totalSpins}</span>;
 }

@@ -109,7 +109,7 @@ export function usePlayAudioSliceChange() {
   return null;
 }
 
-export function useRealtimeFirestoreData() {
+export function useSubscribeMetricsData() {
   const { totalSpins: localTotalSpins, setTotalSpins } = useDataStore();
 
   useEffect(() => {
