@@ -313,8 +313,11 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     const changedIndex = slices
       .map((s) => s.name)
       .findIndex((name, index) => name !== newNames[index]);
-    const changedName = newNames[changedIndex].trim();
-    newNames[changedIndex] = changedName;
+
+    if (changedIndex > -1) {
+      const changedName = newNames[changedIndex].trim();
+      newNames[changedIndex] = changedName;
+    }
 
     const newSlices = generateSliceGeometry(newNames, SLICE_CYLINDER_RADIUS);
     return set({ slices: newSlices });
