@@ -6,6 +6,7 @@ import ViewButtons from "./_Overlay/ViewButtons";
 import githubLogo from "../assets/github.svg";
 import trelloLogo from "../assets/trello.svg";
 import EditWheel from "./_Overlay/EditWheel";
+import SpinCounter from "./_Overlay/SpinCounter";
 
 export default function Overlay() {
   return (
@@ -23,7 +24,10 @@ export default function Overlay() {
               <ResetButton />
               <EditWheel />
             </div>
-            <SpinPower />
+            <div className="flex flex-col gap-y-2 text-center">
+              <SpinPower />
+              <SpinCounter />
+            </div>
           </div>
         </div>
         <SelectedSlice />

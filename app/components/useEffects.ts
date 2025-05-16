@@ -1,9 +1,11 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { use, useEffect, useMemo, useRef, useState } from "react";
-import { useAppStore, useSpinnerStore } from "./useStore";
+import { useAppStore, useDataStore, useSpinnerStore } from "./useStore";
 import ding from "../assets/ding.m4a";
 import * as THREE from "three";
 import { removeNameFromWheel } from "./useStore";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "~/firebase.client";
 
 export function useAnimateSpinningWheel() {
   return useFrame(useSpinnerStore.getState().reduceWheelSpeed);
@@ -103,6 +105,25 @@ export function usePlayAudioSliceChange() {
       source.start(0);
     }
   }, [currentName, userInteracted, canPlay, isSpinning]);
+
+  return null;
+}
+
+export function useRealtimeFirestoreData() {
+  const { totalSpins: localTotalSpins, setTotalSpins } = useDataStore();
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, "dashboard", "metrics"), (doc) => {
+      if (doc.exists()) {
+        const { totalSpins: firestoreTotalSpins } = doc.data();
+        if (firestoreTotalSpins !== localTotalSpins) {
+          setTotalSpins(doc.data().totalSpins);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return null;
 }

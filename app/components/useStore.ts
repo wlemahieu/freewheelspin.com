@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "~/firebase.client";
 
 const DEFAULT_SPIN_POWER = 10;
 const DEFAULT_VIEW = "2D";
@@ -81,6 +83,11 @@ type SpinnerStore = {
   updateSliceText: (name: string) => void;
 };
 
+type DataStore = {
+  totalSpins: number;
+  setTotalSpins: (totalSpins: number) => void;
+};
+
 function shuffleArray(array: string[]) {
   return array.sort(() => Math.random() - 0.5);
 }
@@ -109,6 +116,11 @@ function generateSliceGeometry(names: string[], radius: number): Slice[] {
       sliceRef: null,
     };
   });
+}
+
+function incrementTotalSpins() {
+  const docRef = doc(db, "dashboard", "metrics");
+  return updateDoc(docRef, { totalSpins: increment(1) });
 }
 
 export function removeNameFromWheel(scene: any, objectName: string) {
@@ -245,7 +257,11 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       return reset();
     }
 
-    removeNameFromWheel(scene, previousWinnerName);
+    if (previousWinnerName) {
+      removeNameFromWheel(scene, previousWinnerName);
+    }
+
+    incrementTotalSpins();
 
     // define some spin power constraints for UX
     const bottomRange = 0.1;
@@ -322,4 +338,9 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     const newSlices = generateSliceGeometry(newNames, SLICE_CYLINDER_RADIUS);
     return set({ slices: newSlices });
   },
+}));
+
+export const useDataStore = create<DataStore>((set) => ({
+  totalSpins: 0,
+  setTotalSpins: (totalSpins: number) => set({ totalSpins }),
 }));

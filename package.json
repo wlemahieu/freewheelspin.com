@@ -6,7 +6,10 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "emulators": "./emulators.sh",
+    "auth": "gcloud auth application-default login",
+    "reauth": "firebase login --reauth"
   },
   "dependencies": {
     "@react-router/node": "^7.3.0",
@@ -15,6 +18,8 @@
     "@react-three/fiber": "^9.1.0",
     "@react-three/postprocessing": "^3.0.4",
     "@react-three/rapier": "^2.0.0",
+    "firebase": "^11.7.3",
+    "firebase-admin": "^13.4.0",
     "isbot": "^5.1.17",
     "lodash-es": "^4.17.21",
     "maath": "^0.10.8",
@@ -28,6 +33,7 @@
   "devDependencies": {
     "@react-router/dev": "^7.3.0",
     "@tailwindcss/vite": "^4.0.0",
+    "@types/firebase": "^2.4.32",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^20",
     "@types/react": "^19.0.1",
