@@ -333,7 +333,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       if (!slice.sliceRef) return;
       if (slice.name === currentName) {
         if (slice.sliceRef.position.y == 0) {
-          slice.sliceRef.position.y = 0.1;
+          slice.sliceRef.position.y = 0.05;
         }
       } else {
         slice.sliceRef.position.y = 0;

@@ -1,6 +1,7 @@
 import { Text } from "@react-three/drei";
 import {
   SLICE_CYLINDER_RADIUS,
+  useConfigStore,
   useSpinnerStore,
   type Slice,
 } from "../useStore";
@@ -22,6 +23,10 @@ export default function SegmentSlice({ index, slice }: Props) {
     textAngle,
     wins,
   } = slice;
+  const countWins = useConfigStore((s) => s.countWins);
+  const currentName = useSpinnerStore((s) => s.currentName);
+  const isSelected = currentName === name;
+
   return (
     <mesh
       name={name}
@@ -48,8 +53,8 @@ export default function SegmentSlice({ index, slice }: Props) {
         args={[
           SLICE_CYLINDER_RADIUS,
           SLICE_CYLINDER_RADIUS,
-          0.1,
-          64,
+          0.3,
+          32,
           1,
           false,
           cylinderThetaStart,
@@ -58,13 +63,13 @@ export default function SegmentSlice({ index, slice }: Props) {
       />
       <Text
         key={`text-${index}`}
-        position={[textX, 0.1, textZ]}
+        position={[textX, 0.3, textZ]}
         rotation={[-Math.PI / 2, 0, textAngle]}
         fontSize={0.12}
         fontWeight={"bold"}
         color={"white"}
       >
-        {name} {wins > 0 ? `(${wins})` : ""}
+        {name} {countWins && wins > 0 ? `(${wins})` : ""}
       </Text>
     </mesh>
   );
