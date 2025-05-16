@@ -21,12 +21,18 @@ export default function Scene() {
       }}
     >
       {/* <axesHelper args={[5]} /> */}
-      <directionalLight
-        color="white"
-        position={[-2, 3, 0]}
-        intensity={2}
-        scale={1}
-      />
+      {view === "2D" && (
+        <directionalLight color="white" position={[0, 3, 0]} intensity={0.65} />
+      )}
+      {view === "3D" && (
+        <>
+          <directionalLight
+            color="white"
+            position={[0, 15, 15]}
+            intensity={10}
+          />
+        </>
+      )}
       <OrbitControls
         autoRotate={false}
         maxPolarAngle={Math.PI / 3} // Prevent going under the wheel
