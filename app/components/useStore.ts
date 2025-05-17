@@ -4,6 +4,8 @@ import { doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "~/firebase.client";
 
 const DEFAULT_SPIN_POWER = 3;
+const DEFAULT_REMOVE_WINNERS = true;
+const DEFAULT_COUNT_WINS = false;
 const DEFAULT_VIEW = "2D";
 const ORIGINAL_NAMES = [
   "Alice",
@@ -314,6 +316,10 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({ isSpinning: true, winnerName: "" });
   },
   reset: () => {
+    useConfigStore.setState({
+      removeWinners: DEFAULT_REMOVE_WINNERS,
+      countWins: DEFAULT_COUNT_WINS,
+    });
     return set({
       isSpinning: false,
       winnerName: "",
@@ -361,9 +367,9 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 }));
 
 export const useConfigStore = create<ConfigStore>((set) => ({
-  removeWinners: true,
+  removeWinners: DEFAULT_REMOVE_WINNERS,
   setRemoveWinners: (removeWinners: boolean) => set({ removeWinners }),
-  countWins: false,
+  countWins: DEFAULT_COUNT_WINS,
   setCountWins: (countWins: boolean) => set({ countWins }),
 }));
 
