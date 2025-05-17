@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "~/firebase.client";
 
-const DEFAULT_SPIN_POWER = 10;
+const DEFAULT_SPIN_POWER = 3;
 const DEFAULT_VIEW = "2D";
 const ORIGINAL_NAMES = [
   "Alice",
@@ -27,7 +27,7 @@ const ORIGINAL_NAMES = [
   "Sam",
   "Tina",
 ];
-const RATE_OF_DECELERATION = 0.0007; // higher means decelerate faster
+const RATE_OF_DECELERATION = 0.001; // higher means decelerate faster
 export const SLICE_CYLINDER_RADIUS = 1;
 
 export type Slice = {
@@ -75,8 +75,8 @@ type SpinnerStore = {
   setSpinPower: (spinPower: number) => void;
   winnerName: string;
   elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
-  showEditModal: boolean;
-  setShowEditModal: (showEditModal: boolean) => void;
+  showOptionsModal: boolean;
+  setShowOptionsModal: (showEditModal: boolean) => void;
   edit: (names: string[]) => void;
   updateSliceText: (name: string) => void;
 };
@@ -244,7 +244,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     }
   },
   isSpinning: false,
-  randomizeSpinPower: true,
+  randomizeSpinPower: false,
   setRandomizeSpinPower: (randomizeSpinPower: boolean) =>
     set({ randomizeSpinPower }),
   spinVelocity: 0,
@@ -340,8 +340,8 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       }
     });
   },
-  showEditModal: false,
-  setShowEditModal: (showEditModal: boolean) => set({ showEditModal }),
+  showOptionsModal: false,
+  setShowOptionsModal: (showOptionsModal: boolean) => set({ showOptionsModal }),
   edit: (names: string[]) => set({ slices: generateSliceGeometry(names) }),
   updateSliceText: (textAreaValue: string) => {
     const { slices } = get();

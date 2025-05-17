@@ -9,7 +9,7 @@ export default function SelectedSlice() {
   if (!winnerName) {
     if (currentName && isSpinning) {
       return (
-        <div className="text-2xl mt-6 font-bold text-center flex flex-col gap-y-2">
+        <div className="text-2xl font-bold text-center flex flex-col gap-y-2">
           <span>{currentName}</span>
         </div>
       );
@@ -18,7 +18,7 @@ export default function SelectedSlice() {
   }
 
   return (
-    <div className="text-2xl mt-6 font-bold text-center flex flex-col gap-y-2 text-amber-400">
+    <div className="text-2xl font-bold text-center flex flex-col gap-y-2 text-amber-400">
       <span>{winnerName}</span>
     </div>
   );

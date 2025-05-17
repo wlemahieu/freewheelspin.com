@@ -1,35 +1,27 @@
 import { Link } from "react-router";
 import ResetButton from "./_Overlay/ResetButton";
 import SelectedSlice from "./_Overlay/SelectedSlice";
-import SpinPower from "./_Overlay/SpinPower";
 import ViewButtons from "./_Overlay/ViewButtons";
 import githubLogo from "../assets/github.svg";
 import trelloLogo from "../assets/trello.svg";
-import EditWheel from "./_Overlay/EditWheel";
+import OptionsModal from "./_Overlay/OptionsModal";
 import SpinCounter from "./_Overlay/SpinCounter";
-import RemoveWinners from "./_Overlay/RemoveWinners";
-import CountWins from "./_Overlay/CountWins";
 
 export default function Overlay() {
   return (
     <div className="absolute top-0 left-0 z-10 h-full w-full pointer-events-none">
-      <div className="text-white p-2 ">
+      <div className="text-white p-2">
         <div className="flex items-center justify-center">
-          <div className="pointer-events-auto flex flex-col gap-y-2 justify-between">
+          <div className="pointer-events-auto flex flex-col justify-between">
             <div className="text-center">
-              <a className="text-3xl" href="/">
+              <a className="text-2xl" href="/">
                 FreeWheelSpin.com
               </a>
             </div>
             <div className="flex gap-x-2 justify-center">
               <ViewButtons />
               <ResetButton />
-              <EditWheel />
-            </div>
-            <div className="flex flex-col gap-y-2 text-center">
-              <SpinPower />
-              <RemoveWinners />
-              <CountWins />
+              <OptionsModal />
             </div>
           </div>
         </div>
