@@ -7,3 +7,7 @@
 
 firebase-debug.log
 firestore-debug.log
+
+/generated/
+
+.env
