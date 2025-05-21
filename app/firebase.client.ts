@@ -60,5 +60,5 @@ export const signIn = async (email: string, password: string) => {
 if (process.env.NODE_ENV !== "production") {
   connectFirestoreEmulator(db, "127.0.0.1", 8086);
   // connectAuthEmulator(auth, "http://localhost:9099");
-  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+  // connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 }

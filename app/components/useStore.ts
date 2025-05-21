@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
-import { doc, updateDoc, increment } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 import { db } from "~/firebase.client";
 
 const DEFAULT_SPIN_POWER = 3;
@@ -125,8 +125,12 @@ export function generateSliceGeometry(names: string[]): Slice[] {
   });
 }
 
-function incrementTotalSpins() {
+async function incrementTotalSpins() {
   const docRef = doc(db, "dashboard", "metrics");
+  const document = await getDoc(docRef);
+  if (!document.exists()) {
+    return setDoc(docRef, { totalSpins: 1 });
+  }
   return updateDoc(docRef, { totalSpins: increment(1) });
 }
 

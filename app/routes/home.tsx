@@ -16,7 +16,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   useAudio();
   return (
-    <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
+    <div className="relative h-screen w-screen">
       <Overlay />
       <Scene />
     </div>

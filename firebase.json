@@ -6,9 +6,6 @@
     "firestore": {
       "port": 8086
     },
-    "functions": {
-      "port": 5001
-    },
     "ui": {
       "enabled": true,
       "port": 4001
