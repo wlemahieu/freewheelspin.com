@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Sparkles } from "@react-three/drei";
 import Spinner from "./Spinner";
 import * as THREE from "three";
 import Picker from "./Picker";
@@ -20,6 +20,14 @@ export default function Scene() {
         setCamera(state.camera as THREE.OrthographicCamera);
       }}
     >
+      <Sparkles
+        count={1000}
+        position={[0, 0, 0]}
+        scale={[15, 8, 5]}
+        speed={0.55}
+        size={2.5}
+        color={"#ffffff"}
+      />
       {/* <axesHelper args={[5]} /> */}
       {view === "2D" && (
         <directionalLight color="white" position={[0, 3, 0]} intensity={0.65} />
