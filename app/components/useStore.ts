@@ -49,42 +49,42 @@ type CameraStore = {
 
 type SpinnerStore = {
   currentName: string;
-  hasSpunOnce: boolean;
   calculateSelectedName: () => void;
-  slices: Slice[];
-  reduceWheelSpeed: () => void;
-  randomizeSpinPower: boolean;
-  setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
-  spinWheel: (scene: any) => void;
-  spinnerRef: THREE.Group | null;
-  spinVelocity: number;
-  spinDuration: number;
-  spinStartTime: number | null;
-  setSpinVelocity: (spinVelocity: number) => void;
+  edit: (names: string[]) => void;
+  elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
+  hasSpunOnce: boolean;
   isSpinning: boolean;
-  setSpinning: () => void;
+  randomizeSpinPower: boolean;
+  reduceWheelSpeed: () => void;
   reset: () => void;
-  spinPower: number;
+  setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
+  setShowOptionsModal: (showEditModal: boolean) => void;
+  setSpinning: () => void;
   setSpinPower: (spinPower: number) => void;
+  setSpinVelocity: (spinVelocity: number) => void;
+  showOptionsModal: boolean;
+  slices: Slice[];
+  spinDuration: number;
+  spinnerRef: THREE.Group | null;
+  spinPower: number;
+  spinStartTime: number | null;
+  spinVelocity: number;
+  spinWheel: (scene: any) => void;
   winnerName: string;
   winnerSlice: () => Slice | undefined;
-  elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
-  showOptionsModal: boolean;
-  setShowOptionsModal: (showEditModal: boolean) => void;
-  edit: (names: string[]) => void;
   updateSliceText: (name: string) => void;
 };
 
 type DataStore = {
-  totalSpins: number;
   setTotalSpins: (totalSpins: number) => void;
+  totalSpins: number;
 };
 
 type ConfigStore = {
-  removeWinners: boolean;
-  setRemoveWinners: (removeWinners: boolean) => void;
   countWins: boolean;
+  removeWinners: boolean;
   setCountWins: (countWins: boolean) => void;
+  setRemoveWinners: (removeWinners: boolean) => void;
 };
 
 function shuffleArray(array: string[]) {
@@ -115,7 +115,7 @@ export function generateSliceGeometry(names: string[]): Slice[] {
   });
 }
 
-async function incrementTotalSpins() {
+async function incrementTotalSpinsDB() {
   const docRef = doc(db, "dashboard", "metrics");
   const document = await getDoc(docRef);
   if (!document.exists()) {
@@ -168,35 +168,6 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
-  hasSpunOnce: false,
-  slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
-  reduceWheelSpeed: () => {
-    let { slices, spinnerRef } = get();
-    const { isSpinning, spinVelocity } = get();
-    if (spinnerRef && isSpinning) {
-      if (spinVelocity > 0) {
-        spinnerRef.rotation.y += spinVelocity;
-        set({ spinVelocity: Math.max(spinVelocity - RATE_OF_DECELERATION, 0) });
-      } else {
-        const winnerName = get().currentName;
-        const spinDuration = new Date().getTime() - (get().spinStartTime || 0);
-        // increments the winner's wins in zustand store in their slice.
-        const winnerSlice = slices.findIndex(
-          (slice) => slice.name === winnerName
-        );
-        if (winnerSlice > -1) {
-          slices[winnerSlice].wins += 1;
-          //set({ slices });
-        }
-        return set({
-          isSpinning: false,
-          slices,
-          spinDuration,
-          winnerName,
-        });
-      }
-    }
-  },
   calculateSelectedName: () => {
     const { currentName, spinnerRef, slices } = get();
     if (!spinnerRef) return;
@@ -240,13 +211,80 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       set({ currentName: name });
     }
   },
+  edit: (names: string[]) => set({ slices: generateSliceGeometry(names) }),
+  elevateSelectedSlice: () => {
+    const { slices, currentName } = get();
+    slices.forEach((slice) => {
+      if (!slice.sliceRef) return;
+      if (slice.name === currentName) {
+        if (slice.sliceRef.position.y == 0) {
+          slice.sliceRef.position.y = 0.05;
+        }
+      } else {
+        slice.sliceRef.position.y = 0;
+      }
+    });
+  },
+  hasSpunOnce: false,
   isSpinning: false,
   randomizeSpinPower: false,
+  reduceWheelSpeed: () => {
+    let { slices, spinnerRef } = get();
+    const { isSpinning, spinVelocity } = get();
+    if (spinnerRef && isSpinning) {
+      if (spinVelocity > 0) {
+        spinnerRef.rotation.y += spinVelocity;
+        set({ spinVelocity: Math.max(spinVelocity - RATE_OF_DECELERATION, 0) });
+      } else {
+        const winnerName = get().currentName;
+        const spinDuration = new Date().getTime() - (get().spinStartTime || 0);
+        // increments the winner's wins in zustand store in their slice.
+        const winnerSlice = slices.findIndex(
+          (slice) => slice.name === winnerName
+        );
+        if (winnerSlice > -1) {
+          slices[winnerSlice].wins += 1;
+          //set({ slices });
+        }
+        return set({
+          isSpinning: false,
+          slices,
+          spinDuration,
+          winnerName,
+        });
+      }
+    }
+  },
+  reset: () => {
+    useConfigStore.setState({
+      removeWinners: DEFAULT_REMOVE_WINNERS,
+      countWins: DEFAULT_COUNT_WINS,
+    });
+    return set({
+      isSpinning: false,
+      winnerName: "",
+      slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
+      currentName: "",
+      spinVelocity: 0,
+    });
+  },
   setRandomizeSpinPower: (randomizeSpinPower: boolean) =>
     set({ randomizeSpinPower }),
-  spinVelocity: 0,
+  setShowOptionsModal: (showOptionsModal: boolean) => set({ showOptionsModal }),
+  setSpinning: () => {
+    return set({ isSpinning: true, winnerName: "" });
+  },
+  setSpinPower: (spinPower: number) => {
+    return set({ spinPower, randomizeSpinPower: false });
+  },
+  setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
+  showOptionsModal: false,
+  slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
   spinDuration: 0,
+  spinnerRef: null,
+  spinPower: DEFAULT_SPIN_POWER,
   spinStartTime: null,
+  spinVelocity: 0,
   spinWheel: (scene) => {
     const {
       slices,
@@ -279,7 +317,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       set({ slices: newSlicesFull });
     }
 
-    incrementTotalSpins();
+    incrementTotalSpinsDB();
 
     // define some spin power constraints for UX
     const bottomRange = 0.1;
@@ -306,54 +344,12 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       winnerName: "",
     });
   },
-  spinnerRef: null,
-  setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
-  setSpinning: () => {
-    return set({ isSpinning: true, winnerName: "" });
-  },
-  reset: () => {
-    useConfigStore.setState({
-      removeWinners: DEFAULT_REMOVE_WINNERS,
-      countWins: DEFAULT_COUNT_WINS,
-    });
-    return set({
-      isSpinning: false,
-      winnerName: "",
-      slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
-      currentName: "",
-      spinVelocity: 0,
-    });
-  },
-  spinPower: DEFAULT_SPIN_POWER,
-  setSpinPower: (spinPower: number) => {
-    return set({ spinPower, randomizeSpinPower: false });
-  },
   winnerName: "",
   winnerSlice: () => {
-    const { hasSpunOnce, slices, currentName } = get();
-    return (
-      (hasSpunOnce &&
-        currentName &&
-        slices.find((slice) => slice.name === currentName)) ||
-      undefined
-    );
+    const { hasSpunOnce, slices, winnerName } = get();
+    const found = slices.find((slice) => slice.name === winnerName);
+    return hasSpunOnce ? found : undefined;
   },
-  elevateSelectedSlice: () => {
-    const { slices, currentName } = get();
-    slices.forEach((slice) => {
-      if (!slice.sliceRef) return;
-      if (slice.name === currentName) {
-        if (slice.sliceRef.position.y == 0) {
-          slice.sliceRef.position.y = 0.05;
-        }
-      } else {
-        slice.sliceRef.position.y = 0;
-      }
-    });
-  },
-  showOptionsModal: false,
-  setShowOptionsModal: (showOptionsModal: boolean) => set({ showOptionsModal }),
-  edit: (names: string[]) => set({ slices: generateSliceGeometry(names) }),
   updateSliceText: (textAreaValue: string) => {
     const { slices } = get();
     const newNames = textAreaValue.split("\n");
@@ -372,13 +368,13 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 }));
 
 export const useConfigStore = create<ConfigStore>((set) => ({
-  removeWinners: DEFAULT_REMOVE_WINNERS,
-  setRemoveWinners: (removeWinners: boolean) => set({ removeWinners }),
   countWins: DEFAULT_COUNT_WINS,
+  removeWinners: DEFAULT_REMOVE_WINNERS,
   setCountWins: (countWins: boolean) => set({ countWins }),
+  setRemoveWinners: (removeWinners: boolean) => set({ removeWinners }),
 }));
 
 export const useFirestoreData = create<DataStore>((set) => ({
-  totalSpins: 0,
   setTotalSpins: (totalSpins: number) => set({ totalSpins }),
+  totalSpins: 0,
 }));
