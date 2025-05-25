@@ -21,9 +21,9 @@ export default function Scene() {
       }}
     >
       <Sparkles
-        count={1500}
+        count={2000}
         position={[0, 0, 0]}
-        scale={[10, 10, 10]}
+        scale={[20, 20, 20]}
         speed={0.55}
         size={2.5}
         color={
