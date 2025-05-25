@@ -8,26 +8,16 @@ const DEFAULT_REMOVE_WINNERS = true;
 const DEFAULT_COUNT_WINS = false;
 const DEFAULT_VIEW = "2D";
 const ORIGINAL_NAMES = [
-  "Alice",
-  "Bob",
-  "Charlie",
   "David",
   "Eve",
-  "Frank",
-  "Grace",
   "Heidi",
   "Ivan",
   "Judy",
-  "Kevin",
   "Liam",
-  "Mia",
   "Nina",
-  "Oscar",
   "Paul",
   "Quinn",
   "Rita",
-  "Sam",
-  "Tina",
 ];
 const RATE_OF_DECELERATION = 0.001; // higher means decelerate faster
 export const SLICE_CYLINDER_RADIUS = 1;
