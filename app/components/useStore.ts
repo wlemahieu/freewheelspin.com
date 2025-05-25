@@ -52,8 +52,8 @@ type SpinnerStore = {
   calculateSelectedName: () => void;
   edit: (names: string[]) => void;
   elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
-  hasSpunOnce: boolean;
   isSpinning: boolean;
+  previousWinnerName: string;
   randomizeSpinPower: boolean;
   reduceWheelSpeed: () => void;
   reset: () => void;
@@ -227,6 +227,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   },
   hasSpunOnce: false,
   isSpinning: false,
+  previousWinnerName: "",
   randomizeSpinPower: false,
   reduceWheelSpeed: () => {
     let { slices, spinnerRef } = get();
@@ -335,20 +336,20 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     }
 
     return set({
-      hasSpunOnce: true,
       spinDuration: 0,
       spinPower,
       spinStartTime: new Date().getTime(),
       isSpinning: true,
+      previousWinnerName,
       spinVelocity,
       winnerName: "",
     });
   },
   winnerName: "",
   winnerSlice: () => {
-    const { hasSpunOnce, slices, winnerName } = get();
-    const found = slices.find((slice) => slice.name === winnerName);
-    return hasSpunOnce ? found : undefined;
+    const { slices, previousWinnerName, winnerName } = get();
+    const name = winnerName || previousWinnerName;
+    return slices.find((slice) => slice.name === name);
   },
   updateSliceText: (textAreaValue: string) => {
     const { slices } = get();

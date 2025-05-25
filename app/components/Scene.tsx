@@ -1,10 +1,11 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Sparkles } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import Spinner from "./Spinner";
 import * as THREE from "three";
 import Picker from "./Picker";
-import { useCameraStore, useSpinnerStore } from "./useStore";
+import { useCameraStore } from "./useStore";
 import { usePlayAudioSliceChange } from "./useEffects";
+import { Sparklesss } from "./Sparkles";
 
 export default function Scene() {
   usePlayAudioSliceChange();
@@ -20,16 +21,8 @@ export default function Scene() {
         setCamera(state.camera as THREE.OrthographicCamera);
       }}
     >
-      <Sparkles
-        count={2000}
-        position={[0, 0, 0]}
-        scale={[20, 20, 20]}
-        speed={0.55}
-        size={2.5}
-        color={
-          useSpinnerStore.getState().winnerSlice()?.sliceColor || "#ffffff"
-        }
-      />
+      <Sparklesss />
+
       {/* <axesHelper args={[5]} /> */}
       {view === "2D" && (
         <directionalLight color="white" position={[0, 3, 0]} intensity={0.65} />
