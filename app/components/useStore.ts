@@ -29,7 +29,7 @@ export type Slice = {
   textAngle: number;
   textX: number;
   textZ: number;
-  deterministicColor: string;
+  sliceColor: string;
   sliceRef: THREE.Mesh | null;
   wins: number;
 };
@@ -49,6 +49,7 @@ type CameraStore = {
 
 type SpinnerStore = {
   currentName: string;
+  hasSpunOnce: boolean;
   calculateSelectedName: () => void;
   slices: Slice[];
   reduceWheelSpeed: () => void;
@@ -66,6 +67,7 @@ type SpinnerStore = {
   spinPower: number;
   setSpinPower: (spinPower: number) => void;
   winnerName: string;
+  winnerSlice: () => Slice | undefined;
   elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
   showOptionsModal: boolean;
   setShowOptionsModal: (showEditModal: boolean) => void;
@@ -97,9 +99,7 @@ export function generateSliceGeometry(names: string[]): Slice[] {
       cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
     const textX = Math.cos(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
     const textZ = Math.sin(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
-    const deterministicColor = `hsl(${
-      (index / names.length) * 360
-    }, 100%, 50%)`;
+    const sliceColor = `hsl(${(index / names.length) * 360}, 100%, 50%)`;
 
     return {
       name,
@@ -108,7 +108,7 @@ export function generateSliceGeometry(names: string[]): Slice[] {
       textAngle,
       textX,
       textZ,
-      deterministicColor,
+      sliceColor,
       sliceRef: null,
       wins: 0,
     };
@@ -168,6 +168,7 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
 
 export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   currentName: "",
+  hasSpunOnce: false,
   slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
   reduceWheelSpeed: () => {
     let { slices, spinnerRef } = get();
@@ -296,6 +297,7 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     }
 
     return set({
+      hasSpunOnce: true,
       spinDuration: 0,
       spinPower,
       spinStartTime: new Date().getTime(),
@@ -327,6 +329,15 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     return set({ spinPower, randomizeSpinPower: false });
   },
   winnerName: "",
+  winnerSlice: () => {
+    const { hasSpunOnce, slices, currentName } = get();
+    return (
+      (hasSpunOnce &&
+        currentName &&
+        slices.find((slice) => slice.name === currentName)) ||
+      undefined
+    );
+  },
   elevateSelectedSlice: () => {
     const { slices, currentName } = get();
     slices.forEach((slice) => {

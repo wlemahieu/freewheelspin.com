@@ -3,7 +3,7 @@ import { OrbitControls, Sparkles } from "@react-three/drei";
 import Spinner from "./Spinner";
 import * as THREE from "three";
 import Picker from "./Picker";
-import { useCameraStore } from "./useStore";
+import { useCameraStore, useSpinnerStore } from "./useStore";
 import { usePlayAudioSliceChange } from "./useEffects";
 
 export default function Scene() {
@@ -21,12 +21,14 @@ export default function Scene() {
       }}
     >
       <Sparkles
-        count={1000}
+        count={1500}
         position={[0, 0, 0]}
-        scale={[15, 8, 5]}
+        scale={[10, 10, 10]}
         speed={0.55}
         size={2.5}
-        color={"#ffffff"}
+        color={
+          useSpinnerStore.getState().winnerSlice()?.sliceColor || "#ffffff"
+        }
       />
       {/* <axesHelper args={[5]} /> */}
       {view === "2D" && (

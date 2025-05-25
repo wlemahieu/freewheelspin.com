@@ -15,7 +15,7 @@ type Props = {
 export default function SegmentSlice({ index, slice }: Props) {
   const {
     name,
-    deterministicColor,
+    sliceColor,
     cylinderThetaStart,
     cylinderThetaLength,
     textX,
@@ -37,7 +37,7 @@ export default function SegmentSlice({ index, slice }: Props) {
       }}
     >
       <meshPhysicalMaterial
-        color={deterministicColor}
+        color={sliceColor}
         clearcoat={1}
         clearcoatRoughness={0.25}
         roughness={0.5}
