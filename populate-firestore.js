@@ -5,7 +5,7 @@ process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8086";
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
-  projectId: "nano133-com",
+  projectId: "freewheelspin-com",
 });
 
 const db = admin.firestore();
@@ -15,7 +15,7 @@ async function seedData() {
     console.log("🏗️  Seeding Firestore with test data...");
 
     await db.collection("testCollection").doc("testDoc").set({
-      name: "Nano133.com",
+      name: "FreeWheelSpin.com",
       status: "active",
       createdAt: admin.firestore.Timestamp.now(),
     });

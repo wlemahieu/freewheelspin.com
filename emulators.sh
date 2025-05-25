@@ -44,7 +44,7 @@ wait_for_port "127.0.0.1" 9099
 
 # Seed Firestore database
 # echo "🏗️  Seeding Firestore Database..."
-node populate-firestore.js
+# node populate-firestore.js
 
 # Create Firebase Auth test user
 # echo "🏗️  Creating Firebase Auth test user..."
