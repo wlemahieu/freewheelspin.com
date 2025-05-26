@@ -24,8 +24,6 @@ export default function SegmentSlice({ index, slice }: Props) {
     wins,
   } = slice;
   const countWins = useConfigStore((s) => s.countWins);
-  const currentName = useSpinnerStore((s) => s.currentName);
-  const isSelected = currentName === name;
 
   return (
     <mesh
