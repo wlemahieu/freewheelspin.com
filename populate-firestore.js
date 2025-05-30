@@ -14,9 +14,9 @@ async function seedData() {
   try {
     console.log("🏗️  Seeding Firestore with test data...");
 
-    await db.collection("testCollection").doc("testDoc").set({
+    await db.collection("dashboard").doc("metrics").set({
       name: "FreeWheelSpin.com",
-      status: "active",
+      totalSpins: 420,
       createdAt: admin.firestore.Timestamp.now(),
     });
 
