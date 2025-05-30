@@ -8,7 +8,6 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "emulators": "./emulators.sh",
-    "auth": "gcloud auth application-default login",
     "reauth": "firebase login --reauth"
   },
   "dependencies": {
