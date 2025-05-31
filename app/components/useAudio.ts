@@ -5,10 +5,8 @@ import { useEffect } from "react";
 import { useAppStore } from "./useStore";
 
 export function useAudio() {
-  const setUserInteracted = useAppStore((s) => s.setUserInteracted);
-
   useEffect(() => {
-    const enableAudio = () => setUserInteracted(true);
+    const enableAudio = () => useAppStore.setState({ userInteracted: true });
     window.addEventListener("click", enableAudio, { once: true });
     window.addEventListener("keydown", enableAudio, { once: true });
 

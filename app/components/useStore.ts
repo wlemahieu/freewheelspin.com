@@ -3,10 +3,28 @@ import * as THREE from "three";
 import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 import { db } from "~/firebase.client";
 
+// DEV CONTROLS
+const PREVENT_WHEEL_SPIN = false;
+const AXES_HELPER_ENABLED = false;
+export const CAP_DEV = false;
+
+// CONFIGURATION
 const DEFAULT_SPIN_POWER = 3;
 const DEFAULT_REMOVE_WINNERS = true;
 const DEFAULT_COUNT_WINS = false;
-const DEFAULT_VIEW = "2D";
+const DEFAULT_VIEW = "3D";
+export const CAMERA_POSITIONS = {
+  "2D": {
+    x: 0,
+    y: 15,
+    z: 0,
+  },
+  "3D": {
+    x: 0,
+    y: 15,
+    z: 10,
+  },
+};
 const ORIGINAL_NAMES = [
   "David",
   "Eve",
@@ -21,28 +39,35 @@ const ORIGINAL_NAMES = [
 ];
 const RATE_OF_DECELERATION = 0.001; // higher means decelerate faster
 export const SLICE_CYLINDER_RADIUS = 1;
+export const SLICE_HEIGHT = 0.3;
+export const SLICE_RADIAL_SEGMENTS = 64;
+export const SLICE_HEIGHT_SEGMENTS = 1;
+
+type Coords = [number, number, number];
 
 export type Slice = {
   name: string;
+  cap1Rotation: Coords;
+  cap1Position: Coords;
+  cap2Rotation: Coords;
+  cap2Position: Coords;
   cylinderThetaStart: number;
   cylinderThetaLength: number;
-  textAngle: number;
-  textX: number;
-  textZ: number;
+  textPosition: Coords;
+  textRotation: Coords;
   sliceColor: string;
   sliceRef: THREE.Mesh | null;
   wins: number;
 };
 
 type AppStore = {
+  axesHelperEnabled: boolean;
   userInteracted: boolean;
-  setUserInteracted: (userInteracted: boolean) => void;
 };
 
 type CameraStore = {
   camera: THREE.OrthographicCamera | null;
-  setCamera: (camera: THREE.OrthographicCamera | null) => void;
-  view: "2D" | "3D" | null;
+  view: "2D" | "3D";
   view2D: () => void;
   view3D: () => void;
 };
@@ -52,16 +77,12 @@ type SpinnerStore = {
   calculateSelectedName: () => void;
   edit: (names: string[]) => void;
   elevateSelectedSlice: (camera: THREE.OrthographicCamera | null) => void;
+  getWinnerSlice: () => Slice | undefined;
   isSpinning: boolean;
   previousWinnerName: string;
   randomizeSpinPower: boolean;
   reduceWheelSpeed: () => void;
   reset: () => void;
-  setRandomizeSpinPower: (randomizeSpinPower: boolean) => void;
-  setShowOptionsModal: (showEditModal: boolean) => void;
-  setSpinning: () => void;
-  setSpinPower: (spinPower: number) => void;
-  setSpinVelocity: (spinVelocity: number) => void;
   showOptionsModal: boolean;
   slices: Slice[];
   spinDuration: number;
@@ -71,20 +92,16 @@ type SpinnerStore = {
   spinVelocity: number;
   spinWheel: (scene: any) => void;
   winnerName: string;
-  winnerSlice: () => Slice | undefined;
   updateSliceText: (name: string) => void;
 };
 
 type DataStore = {
-  setTotalSpins: (totalSpins: number) => void;
   totalSpins: number;
 };
 
 type ConfigStore = {
   countWins: boolean;
   removeWinners: boolean;
-  setCountWins: (countWins: boolean) => void;
-  setRemoveWinners: (removeWinners: boolean) => void;
 };
 
 function shuffleArray(array: string[]) {
@@ -97,21 +114,40 @@ export function generateSliceGeometry(names: string[]): Slice[] {
     const cylinderThetaStart = (index / names.length) * Math.PI * 2;
     const textAngle =
       cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
+    const cap1Angle = cylinderThetaStart + cylinderThetaLength - Math.PI / 2;
     const textX = Math.cos(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
     const textZ = Math.sin(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
+    const textPosition: Coords = [textX, 0.16, textZ];
+    const textRotation: Coords = [-Math.PI / 2, 0, textAngle];
     const sliceColor = `hsl(${(index / names.length) * 360}, 100%, 50%)`;
-
-    return {
+    const cylinderTheta = cylinderThetaStart + cylinderThetaLength;
+    const cap1Position: Coords = [
+      Math.cos(-cap1Angle) * (SLICE_CYLINDER_RADIUS / 2),
+      0,
+      Math.sin(-cap1Angle) * (SLICE_CYLINDER_RADIUS / 2),
+    ];
+    const cap1Rotation: Coords = [Math.PI, Math.PI / 2, 0];
+    const cap2Rotation: Coords = [0, 0, 0];
+    const cap2Position: Coords = [0, 0, 0];
+    const slice = {
       name,
+      cap1Rotation,
+      cap1Position,
+      cap2Rotation,
+      cap2Position,
       cylinderThetaStart,
       cylinderThetaLength,
-      textAngle,
-      textX,
-      textZ,
+      cylinderTheta,
+      textPosition,
+      textRotation,
       sliceColor,
       sliceRef: null,
       wins: 0,
     };
+    if (index === 0) {
+      console.log("Slice", slice);
+    }
+    return slice;
   });
 }
 
@@ -140,18 +176,18 @@ export function removeNameFromWheel(scene: any, objectName: string) {
 }
 
 export const useAppStore = create<AppStore>((set) => ({
+  axesHelperEnabled: AXES_HELPER_ENABLED,
   userInteracted: false,
-  setUserInteracted: (userInteracted: boolean) => set({ userInteracted }),
 }));
 
 export const useCameraStore = create<CameraStore>((set, get) => ({
   camera: null,
-  setCamera: (camera: THREE.OrthographicCamera | null) => set({ camera }),
   view: DEFAULT_VIEW,
   view2D: () => {
     const camera = get().camera;
     if (!camera) return;
-    camera.position.set(0, 15, 0);
+    const { x, y, z } = CAMERA_POSITIONS["2D"];
+    camera.position.set(x, y, z);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     set({ view: "2D" });
@@ -159,7 +195,8 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
   view3D: () => {
     const camera = get().camera;
     if (!camera) return;
-    camera.position.set(0, 15, 10);
+    const { x, y, z } = CAMERA_POSITIONS["3D"];
+    camera.position.set(x, y, z);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     set({ view: "3D" });
@@ -225,6 +262,11 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       }
     });
   },
+  getWinnerSlice: () => {
+    const { slices, previousWinnerName, winnerName } = get();
+    const name = winnerName || previousWinnerName;
+    return slices.find((slice) => slice.name === name);
+  },
   hasSpunOnce: false,
   isSpinning: false,
   previousWinnerName: "",
@@ -269,16 +311,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       spinVelocity: 0,
     });
   },
-  setRandomizeSpinPower: (randomizeSpinPower: boolean) =>
-    set({ randomizeSpinPower }),
-  setShowOptionsModal: (showOptionsModal: boolean) => set({ showOptionsModal }),
-  setSpinning: () => {
-    return set({ isSpinning: true, winnerName: "" });
-  },
-  setSpinPower: (spinPower: number) => {
-    return set({ spinPower, randomizeSpinPower: false });
-  },
-  setSpinVelocity: (spinVelocity: number) => set({ spinVelocity }),
   showOptionsModal: false,
   slices: generateSliceGeometry(shuffleArray([...ORIGINAL_NAMES])),
   spinDuration: 0,
@@ -287,6 +319,9 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
   spinStartTime: null,
   spinVelocity: 0,
   spinWheel: (scene) => {
+    if (PREVENT_WHEEL_SPIN) {
+      return;
+    }
     const {
       slices,
       isSpinning,
@@ -346,11 +381,6 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
     });
   },
   winnerName: "",
-  winnerSlice: () => {
-    const { slices, previousWinnerName, winnerName } = get();
-    const name = winnerName || previousWinnerName;
-    return slices.find((slice) => slice.name === name);
-  },
   updateSliceText: (textAreaValue: string) => {
     const { slices } = get();
     const newNames = textAreaValue.split("\n");
@@ -371,11 +401,8 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
 export const useConfigStore = create<ConfigStore>((set) => ({
   countWins: DEFAULT_COUNT_WINS,
   removeWinners: DEFAULT_REMOVE_WINNERS,
-  setCountWins: (countWins: boolean) => set({ countWins }),
-  setRemoveWinners: (removeWinners: boolean) => set({ removeWinners }),
 }));
 
-export const useFirestoreData = create<DataStore>((set) => ({
-  setTotalSpins: (totalSpins: number) => set({ totalSpins }),
+export const useFirestoreStore = create<DataStore>((set) => ({
   totalSpins: 0,
 }));

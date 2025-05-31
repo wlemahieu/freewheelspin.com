@@ -1,7 +1,7 @@
 import { useConfigStore, useSpinnerStore } from "../useStore";
 
 export default function CountWins() {
-  const { removeWinners, countWins, setCountWins } = useConfigStore();
+  const { removeWinners, countWins } = useConfigStore();
   const isSpinning = useSpinnerStore((s) => s.isSpinning);
 
   return (
@@ -12,7 +12,7 @@ export default function CountWins() {
         disabled={removeWinners || isSpinning}
         id="count-wins"
         checked={countWins}
-        onChange={() => setCountWins(!countWins)}
+        onChange={() => useConfigStore.setState({ countWins: !countWins })}
       />
     </span>
   );

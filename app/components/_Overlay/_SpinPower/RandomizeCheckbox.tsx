@@ -6,9 +6,6 @@ export default function RandomizeCheckbox() {
   const randomizeSpinPower = useSpinnerStore(
     (state) => state.randomizeSpinPower
   );
-  const setRandomizeSpinPower = useSpinnerStore(
-    (state) => state.setRandomizeSpinPower
-  );
 
   return (
     <span className="flex items-center gap-x-1">
@@ -21,7 +18,7 @@ export default function RandomizeCheckbox() {
         checked={randomizeSpinPower}
         onChange={(e) => {
           const value = e.target.checked;
-          setRandomizeSpinPower(value);
+          useSpinnerStore.setState({ randomizeSpinPower: value });
         }}
         disabled={isSpinning}
         title="randomize spin power"

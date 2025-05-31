@@ -1,7 +1,7 @@
 import { useConfigStore, useSpinnerStore } from "../useStore";
 
 export default function RemoveWinners() {
-  const { removeWinners, setRemoveWinners } = useConfigStore();
+  const { removeWinners } = useConfigStore();
   const isSpinning = useSpinnerStore((s) => s.isSpinning);
   return (
     <span className="flex gap-x-2">
@@ -11,7 +11,9 @@ export default function RemoveWinners() {
         disabled={isSpinning}
         id="remove-winners"
         checked={removeWinners}
-        onChange={() => setRemoveWinners(!removeWinners)}
+        onChange={() =>
+          useConfigStore.setState({ removeWinners: !removeWinners })
+        }
       />
     </span>
   );

@@ -3,15 +3,14 @@ import { useSpinnerStore } from "./useStore";
 import { useEffect, useRef } from "react";
 
 export function Sparklesss() {
-  const winnerSlice = useSpinnerStore((s) => s.winnerSlice);
-  const slice = winnerSlice();
-  const sliceColor = useRef("");
+  const winnerSlice = useSpinnerStore((s) => s.getWinnerSlice)();
+  const lastSliceColor = useRef("");
 
   useEffect(() => {
-    if (slice?.sliceColor) {
-      sliceColor.current = slice.sliceColor;
+    if (winnerSlice?.sliceColor) {
+      lastSliceColor.current = winnerSlice.sliceColor;
     }
-  }, [slice?.sliceColor]);
+  }, [winnerSlice?.sliceColor]);
 
   return (
     <Sparkles
@@ -20,7 +19,7 @@ export function Sparklesss() {
       scale={[20, 20, 20]}
       speed={0.55}
       size={2.5}
-      color={slice?.sliceColor || sliceColor.current}
+      color={winnerSlice?.sliceColor || lastSliceColor.current}
     />
   );
 }
