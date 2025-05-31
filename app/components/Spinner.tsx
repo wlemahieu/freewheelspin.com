@@ -3,6 +3,7 @@ import {
   useElevateSelectedSlice,
   useCalculateSelectedName,
   useSyncSceneRemovedSlices,
+  usePresentWinner,
 } from "./useEffects";
 import SegmentSlice from "./_Spinner/SegmentSlice";
 import { useSpinnerStore } from "./useStore";
@@ -13,6 +14,8 @@ export default function Spinner() {
   useCalculateSelectedName();
   useElevateSelectedSlice();
   useSyncSceneRemovedSlices();
+  usePresentWinner();
+
   const slices = useSpinnerStore((s) => s.slices);
 
   return (

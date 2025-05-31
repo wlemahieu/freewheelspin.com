@@ -3,7 +3,13 @@ import { OrbitControls } from "@react-three/drei";
 import Spinner from "./Spinner";
 import * as THREE from "three";
 import Picker from "./Picker";
-import { CAMERA_POSITIONS, useAppStore, useCameraStore } from "./useStore";
+import {
+  ORBIT_CONTROL_MIN_DISTANCE,
+  ORBIT_CONTROL_MAX_DISTANCE,
+  CAMERA_POSITIONS,
+  useAppStore,
+  useCameraStore,
+} from "./useStore";
 import { usePlayAudioSliceChange } from "./useEffects";
 import { Sparklesss } from "./Sparkles";
 
@@ -58,8 +64,8 @@ export default function Scene() {
         enablePan={false}
         enableRotate={view === "3D"}
         enableZoom={true}
-        minDistance={2}
-        maxDistance={3}
+        minDistance={ORBIT_CONTROL_MIN_DISTANCE}
+        maxDistance={ORBIT_CONTROL_MAX_DISTANCE}
       />
       <Picker />
       <Spinner />

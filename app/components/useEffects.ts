@@ -1,6 +1,13 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
-import { useAppStore, useFirestoreStore, useSpinnerStore } from "./useStore";
+import {
+  SLICE_HEIGHT,
+  SLICE_POSITION_Y_DEFAULT,
+  SLICE_POSITION_Y_ELEVATED,
+  useAppStore,
+  useFirestoreStore,
+  useSpinnerStore,
+} from "./useStore";
 import ding from "../assets/ding.m4a";
 import * as THREE from "three";
 import { removeNameFromWheel } from "./useStore";
@@ -124,6 +131,61 @@ export function useSubscribeMetricsData() {
 
     return () => unsubscribe();
   }, []);
+
+  return null;
+}
+
+/**
+ * Once a winner is selected and the wheel stops spinning, transition the winning
+ * slice up on the y-axis the total height of the slice (or slightly more), then
+ * lerp the slice towards just in front of the camrea. The lerp should do at least 1 rotation
+ * as a transition. Almost like a "zoom in" effect, but the slice is physically moving
+ * towards the camera to be presented as the winner. The total animation should take about 1-2 seconds.
+ *
+ */
+export function usePresentWinner() {
+  const { camera } = useThree();
+  const isSpinning = useSpinnerStore((s) => s.isSpinning);
+  const winnerName = useSpinnerStore((s) => s.winnerName);
+  const getWinnerSlice = useSpinnerStore((s) => s.getWinnerSlice);
+
+  useFrame((state, delta) => {
+    if (isSpinning || !winnerName) return;
+
+    const winnerSlice = getWinnerSlice();
+    if (!winnerSlice?.sliceRef) return;
+
+    // Elevate the slice
+    winnerSlice.sliceRef.position.y =
+      SLICE_HEIGHT + SLICE_POSITION_Y_DEFAULT + SLICE_POSITION_Y_ELEVATED;
+
+    // // Ray from camera to center (0,0,0)
+    // const cameraPos = camera.position.clone();
+    // const center = new THREE.Vector3(0, 0, 0);
+    // const direction = center.clone().sub(cameraPos).normalize();
+
+    // // Place the slice a fixed distance from the camera along this direction
+    // const distance = 2;
+    // const targetPosition = cameraPos.add(direction.multiplyScalar(distance));
+
+    // winnerSlice.sliceRef.position.copy(targetPosition);
+
+    // // Make the slice's top face (Y+) point at the camera
+    // winnerSlice.sliceRef.lookAt(camera.position);
+    // winnerSlice.sliceRef.rotateX(Math.PI / 2); // Rotate 90° so Y+ faces camera
+
+    // // Offset by half the radius in local X and Z to center the slice
+    // const radius = SLICE_CYLINDER_RADIUS;
+    // const localOffset = new THREE.Vector3(-radius / 2, 0, -radius / 2);
+    // winnerSlice.sliceRef.position.add(
+    //   winnerSlice.sliceRef
+    //     .localToWorld(localOffset)
+    //     .sub(winnerSlice.sliceRef.position)
+    // );
+
+    // Optionally, reset Y to default if you want it level with the wheel
+    // winnerSlice.sliceRef.position.y = SLICE_POSITION_Y_DEFAULT;
+  });
 
   return null;
 }

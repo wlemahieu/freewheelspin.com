@@ -41,6 +41,10 @@ export const SLICE_CYLINDER_RADIUS = 1;
 export const SLICE_HEIGHT = 0.3;
 export const SLICE_RADIAL_SEGMENTS = 64;
 export const SLICE_HEIGHT_SEGMENTS = 1;
+export const SLICE_POSITION_Y_DEFAULT = 0;
+export const SLICE_POSITION_Y_ELEVATED = 0.05;
+export const ORBIT_CONTROL_MIN_DISTANCE = 2;
+export const ORBIT_CONTROL_MAX_DISTANCE = 3;
 
 type Coords = [number, number, number];
 
@@ -256,10 +260,10 @@ export const useSpinnerStore = create<SpinnerStore>((set, get) => ({
       if (!slice.sliceRef) return;
       if (slice.name === currentName) {
         if (slice.sliceRef.position.y == 0) {
-          slice.sliceRef.position.y = 0.05;
+          slice.sliceRef.position.y = SLICE_POSITION_Y_ELEVATED;
         }
       } else {
-        slice.sliceRef.position.y = 0;
+        slice.sliceRef.position.y = SLICE_POSITION_Y_DEFAULT;
       }
     });
   },
@@ -407,3 +411,23 @@ export const useConfigStore = create<ConfigStore>((set) => ({
 export const useFirestoreStore = create<DataStore>((set) => ({
   totalSpins: 0,
 }));
+
+const WINNER_PHRASES = [
+  "It's %NAME%'s turn!",
+  "All eyes on %NAME%!",
+  "%NAME%, you're up next!",
+  "Step up, %NAME%!",
+  "Let's go, %NAME%!",
+  "The wheel has spoken: %NAME%!",
+  "%NAME%, take the stage!",
+  "Congratulations, %NAME%!",
+  "Ready or not, here comes %NAME%!",
+  "%NAME%, it's your moment!",
+];
+
+export function getRandomWinnerPhrase(name: string) {
+  if (!name) return "";
+  const phrase =
+    WINNER_PHRASES[Math.floor(Math.random() * WINNER_PHRASES.length)];
+  return phrase.replace(/%NAME%/g, name);
+}
