@@ -4,7 +4,6 @@ import {
   SLICE_HEIGHT,
   SLICE_RADIAL_SEGMENTS,
   SLICE_HEIGHT_SEGMENTS,
-  CAP_DEV,
   useConfigStore,
   useSpinnerStore,
   type Slice,
@@ -32,15 +31,13 @@ export default function SegmentSlice({ index, slice }: Props) {
   } = slice;
   const countWins = useConfigStore((s) => s.countWins);
 
-  if (CAP_DEV && index !== 0) return null;
-
   const sliceMaterialProps = {
     color: sliceColor,
     clearcoat: 1,
     clearcoatRoughness: 0.25,
-    roughness: 0.5,
-    metalness: 1.25,
-    transmission: 1,
+    roughness: 0.7,
+    metalness: 0.4,
+    transmission: 0,
     thickness: 0.1,
     ior: 1.5,
     envMapIntensity: 1,
@@ -57,16 +54,14 @@ export default function SegmentSlice({ index, slice }: Props) {
         }
       }}
     >
-      {CAP_DEV && (
-        <mesh rotation={cap1Rotation} position={cap1Position}>
-          <planeGeometry args={[SLICE_CYLINDER_RADIUS, SLICE_HEIGHT]} />
-          <meshPhysicalMaterial {...sliceMaterialProps} />
-        </mesh>
-      )}
-      {/* <mesh rotation={cap2Rotation}>
-        <planeGeometry args={[SLICE_CYLINDER_RADIUS, 0.4]} />
-        <meshPhongMaterial color={sliceColor} side={THREE.DoubleSide} />
-      </mesh> */}
+      <mesh rotation={cap1Rotation} position={cap1Position}>
+        <planeGeometry args={[SLICE_CYLINDER_RADIUS, SLICE_HEIGHT]} />
+        <meshPhysicalMaterial {...sliceMaterialProps} />
+      </mesh>
+      <mesh rotation={cap2Rotation} position={cap2Position}>
+        <planeGeometry args={[SLICE_CYLINDER_RADIUS, SLICE_HEIGHT]} />
+        <meshPhysicalMaterial {...sliceMaterialProps} />
+      </mesh>
       <mesh>
         <meshPhysicalMaterial {...sliceMaterialProps} />
         <cylinderGeometry

@@ -6,7 +6,6 @@ import { db } from "~/firebase.client";
 // DEV CONTROLS
 const PREVENT_WHEEL_SPIN = false;
 const AXES_HELPER_ENABLED = false;
-export const CAP_DEV = false;
 
 // CONFIGURATION
 const DEFAULT_SPIN_POWER = 3;
@@ -115,6 +114,7 @@ export function generateSliceGeometry(names: string[]): Slice[] {
     const textAngle =
       cylinderThetaStart + cylinderThetaLength / 2 - Math.PI / 2;
     const cap1Angle = cylinderThetaStart + cylinderThetaLength - Math.PI / 2;
+    const cap2Angle = cylinderThetaStart - Math.PI / 2;
     const textX = Math.cos(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
     const textZ = Math.sin(-textAngle) * (SLICE_CYLINDER_RADIUS - 0.4);
     const textPosition: Coords = [textX, 0.16, textZ];
@@ -126,9 +126,13 @@ export function generateSliceGeometry(names: string[]): Slice[] {
       0,
       Math.sin(-cap1Angle) * (SLICE_CYLINDER_RADIUS / 2),
     ];
-    const cap1Rotation: Coords = [Math.PI, Math.PI / 2, 0];
-    const cap2Rotation: Coords = [0, 0, 0];
-    const cap2Position: Coords = [0, 0, 0];
+    const cap1Rotation: Coords = [Math.PI, -cap1Angle, 0];
+    const cap2Position: Coords = [
+      Math.cos(-cap2Angle) * (SLICE_CYLINDER_RADIUS / 2),
+      0,
+      Math.sin(-cap2Angle) * (SLICE_CYLINDER_RADIUS / 2),
+    ];
+    const cap2Rotation: Coords = [Math.PI, -cap2Angle, 0];
     const slice = {
       name,
       cap1Rotation,
@@ -144,9 +148,6 @@ export function generateSliceGeometry(names: string[]): Slice[] {
       sliceRef: null,
       wins: 0,
     };
-    if (index === 0) {
-      console.log("Slice", slice);
-    }
     return slice;
   });
 }

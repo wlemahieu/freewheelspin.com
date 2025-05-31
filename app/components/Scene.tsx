@@ -28,25 +28,30 @@ export default function Scene() {
       <Sparklesss />
 
       {axesHelperEnabled && <axesHelper args={[5]} />}
-      {view === "2D" && (
-        <directionalLight color="white" position={[0, 3, 0]} intensity={0.65} />
-      )}
-      {view === "3D" && (
-        <>
-          <directionalLight
-            color="white"
-            position={[0, 15, 15]}
-            intensity={10}
-            lookAt={[0, 0, 0]}
-          />
-          <directionalLight
-            color="white"
-            position={[0, -15, -15]}
-            intensity={10}
-            lookAt={[0, 0, 0]}
-          />
-        </>
-      )}
+      <directionalLight
+        color="white"
+        position={[3, 3, 0]}
+        intensity={1}
+        lookAt={[0, 0, 0]}
+      />
+      <directionalLight
+        color="white"
+        position={[-3, 3, 0]}
+        intensity={1}
+        lookAt={[0, 0, 0]}
+      />
+      <directionalLight
+        color="white"
+        position={[0, 3, 3]}
+        intensity={1}
+        lookAt={[0, 0, 0]}
+      />
+      <directionalLight
+        color="white"
+        position={[0, 3, -3]}
+        intensity={1}
+        lookAt={[0, 0, 0]}
+      />
       <OrbitControls
         autoRotate={false}
         maxPolarAngle={Math.PI / 3} // Prevent going under the wheel
