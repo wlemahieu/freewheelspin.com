@@ -20,8 +20,8 @@ export const CAMERA_POSITIONS = {
   },
   "3D": {
     x: 0,
-    y: 15,
-    z: 10,
+    y: 2,
+    z: 1,
   },
 };
 const ORIGINAL_NAMES = [
@@ -69,7 +69,7 @@ type AppStore = {
 };
 
 type CameraStore = {
-  camera: THREE.OrthographicCamera | null;
+  camera: THREE.PerspectiveCamera | null;
   view: "2D" | "3D";
   view2D: () => void;
   view3D: () => void;
